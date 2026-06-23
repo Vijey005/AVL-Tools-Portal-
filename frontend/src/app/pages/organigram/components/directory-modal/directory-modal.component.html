@@ -1,0 +1,134 @@
+<div class="modal-backdrop" [class.open]="isOpen" (click)="onBackdropClick()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <!-- ── LIST VIEW ───────────────────────────────────────── -->
+    <ng-container *ngIf="view() === 'list'">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span class="ico">📇</span>
+          {{ mode === 'picker' ? 'Select from Directory' : 'People Directory' }}
+          <span class="count-badge">{{ dirCount }} {{ dirCount === 1 ? 'entry' : 'entries' }}</span>
+        </div>
+        <button class="modal-close" (click)="close.emit()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="dir-toolbar">
+          <input class="dir-search" placeholder="Search by name, post or email…"
+                 [value]="filterText()"
+                 (input)="filterText.set($any($event.target).value)"
+                 autofocus>
+          <button class="btn primary" (click)="openEditor()">+ Add Person</button>
+          <ng-container *ngIf="mode === 'manager'">
+            <button class="btn" (click)="importDirectory()">Import…</button>
+            <button class="btn" (click)="exportDirectory()">⬇ Export</button>
+            <button class="btn" (click)="shareDirectory()">🔗 Share</button>
+          </ng-container>
+        </div>
+
+        <!-- Entries list -->
+        <div class="dir-list">
+          <ng-container *ngIf="entries$().length > 0; else emptyState">
+            <div *ngFor="let e of entries$()"
+                 class="dir-entry"
+                 [class.clickable]="mode === 'picker'"
+                 (click)="mode === 'picker' ? pick(e) : null">
+
+              <!-- Avatar -->
+              <div class="avatar small"
+                   [class.has-photo]="!!e.photo"
+                   [style]="e.photo ? 'background-image:url(' + e.photo + ');background-color:transparent;' : ''">
+                {{ e.photo ? '' : initials(e.name) }}
+              </div>
+
+              <!-- Info -->
+              <div class="dir-entry-info">
+                <div class="dir-entry-name">{{ e.name || '(unnamed)' }}</div>
+                <div *ngIf="e.post"    class="dir-entry-post">{{ e.post }}</div>
+                <div class="dir-entry-contact">{{ [e.email, e.phone] | join : '  ·  ' }}</div>
+              </div>
+
+              <!-- Actions (manager mode only) -->
+              <div *ngIf="mode === 'manager'" class="dir-entry-actions">
+                <button class="btn small" (click)="$event.stopPropagation(); openEditor(e)">Edit</button>
+                <button class="btn small danger" (click)="$event.stopPropagation(); deleteEntry(e)">Delete</button>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #emptyState>
+            <div class="dir-empty">
+              <div class="ico-big">{{ filterText() ? '🔍' : '📇' }}</div>
+              <div *ngIf="!filterText()">
+                The directory is empty. Click <b>+ Add Person</b> to create your first entry,
+                or <b>Import…</b> to load from JSON.
+              </div>
+              <div *ngIf="filterText()">No matches for "{{ filterText() }}".</div>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── EDITOR VIEW ─────────────────────────────────────── -->
+    <ng-container *ngIf="view() === 'editor'">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span class="ico">{{ isNew() ? '➕' : '✏️' }}</span>
+          {{ isNew() ? 'Add Person' : 'Edit Person' }}
+        </div>
+        <button class="modal-close" (click)="view.set('list')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="dir-editor">
+          <!-- Photo column -->
+          <div class="editor-photo-col">
+            <div class="avatar large"
+                 [class.has-photo]="!!draft().photo"
+                 [style]="draft().photo ? 'background-image:url(' + draft().photo + ');background-color:transparent;' : ''"
+                 (click)="uploadPhoto()" title="Click to upload photo">
+              {{ draft().photo ? '' : initials(draft().name) }}
+            </div>
+            <div class="small-link" (click)="uploadPhoto()">Upload photo</div>
+            <div *ngIf="draft().photo" class="small-link danger-link" (click)="removePhoto()">Remove</div>
+          </div>
+
+          <!-- Fields -->
+          <div class="editor-fields">
+            <div class="field">
+              <label class="field-label">Name *</label>
+              <input type="text" [value]="draft().name" placeholder="Full name"
+                     (input)="updateDraft({ name: $any($event.target).value })">
+            </div>
+            <div class="field">
+              <label class="field-label">Post</label>
+              <input type="text" [value]="draft().post" placeholder="Job title"
+                     (input)="updateDraft({ post: $any($event.target).value })">
+            </div>
+            <div class="field">
+              <label class="field-label">Email</label>
+              <input type="email" [value]="draft().email" placeholder="name@avl.com"
+                     (input)="updateDraft({ email: $any($event.target).value })">
+            </div>
+            <div class="field">
+              <label class="field-label">Phone</label>
+              <input type="tel" [value]="draft().phone" placeholder="+xx ..."
+                     (input)="updateDraft({ phone: $any($event.target).value })">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button *ngIf="!isNew()" class="btn danger" (click)="deleteEditing()">Delete</button>
+        <div style="flex:1"></div>
+        <button class="btn" (click)="view.set('list')">Cancel</button>
+        <button class="btn primary" (click)="saveEntry()">
+          {{ isNew() ? 'Add to Directory' : 'Save' }}
+        </button>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

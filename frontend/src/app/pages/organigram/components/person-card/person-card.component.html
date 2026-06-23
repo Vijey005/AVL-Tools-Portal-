@@ -1,0 +1,55 @@
+<div class="person-row">
+  <!-- Avatar (shown only when contactOpts.photo) -->
+  <div *ngIf="contactOpts.photo"
+       [class]="avatarClass"
+       [class.has-photo]="!!person.photo"
+       [style]="photoStyle"
+       [title]="isEditMode ? 'Click to upload photo' : ''"
+       (click)="onAvatarClick()">
+    {{ initials }}
+  </div>
+
+  <div class="person-info">
+    <!-- Name (always shown) -->
+    <div class="person-name"
+         [avlCe]="person.name"
+         (avlCeChange)="onField('name', $event)"
+         [avlCeDisabled]="!isEditMode"
+         [attr.data-placeholder]="namePlaceholder">
+    </div>
+
+    <!-- Post -->
+    <div *ngIf="contactOpts.post"
+         class="person-post"
+         [avlCe]="person.post"
+         (avlCeChange)="onField('post', $event)"
+         [avlCeDisabled]="!isEditMode"
+         data-placeholder="Post / job title">
+    </div>
+
+    <!-- Email -->
+    <div *ngIf="contactOpts.email" class="contact-line">
+      <span class="ico">✉</span>
+      <span class="ct-text"
+            [avlCe]="person.email"
+            (avlCeChange)="onField('email', $event)"
+            [avlCeDisabled]="!isEditMode"
+            data-placeholder="email@avl.com">
+      </span>
+    </div>
+
+    <!-- Phone -->
+    <div *ngIf="contactOpts.phone" class="contact-line">
+      <span class="ico">☎</span>
+      <span class="ct-text"
+            [avlCe]="person.phone"
+            (avlCeChange)="onField('phone', $event)"
+            [avlCeDisabled]="!isEditMode"
+            data-placeholder="+xx ...">
+      </span>
+    </div>
+  </div>
+
+  <!-- Delete button (edit mode only, via CSS) -->
+  <button *ngIf="showDeleteBtn" class="row-del" title="Remove" (click)="delete.emit()">×</button>
+</div>

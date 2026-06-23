@@ -1,0 +1,251 @@
+<div class="canvas" #canvasEl id="orgCanvas">
+  <!-- Title block -->
+  <h1 class="org-title"
+      [avlCe]="state.title"
+      (avlCeChange)="emit('titleChange', $event)"
+      [avlCeDisabled]="!isEditMode"
+      data-placeholder="Project Name">
+  </h1>
+  <div class="org-subtitle"
+       [avlCe]="state.subtitle"
+       (avlCeChange)="emit('subtitleChange', $event)"
+       [avlCeDisabled]="!isEditMode"
+       data-placeholder="Subtitle">
+  </div>
+  <div class="title-underline"></div>
+
+  <!-- Chart body -->
+  <div class="chart-body" [style.gridTemplateColumns]="state.options.showSideRoles ? '200px 1fr' : '0 1fr'">
+
+    <!-- ── Side Roles ───────────────────────────────────── -->
+    <div class="side-roles" [style.display]="state.options.showSideRoles ? '' : 'none'">
+      <div class="side-role" *ngFor="let r of state.sideRoles; let i = index; trackBy: trackByIdx">
+        <button class="del-btn" (click)="emit('removeSideRole', i)" title="Remove">✕</button>
+        <div class="name"
+             [avlCe]="r.name"
+             (avlCeChange)="emit('sideRoleChange', { idx: i, field: 'name', value: $event })"
+             [avlCeDisabled]="!isEditMode"
+             data-placeholder="Name">
+        </div>
+        <div class="role"
+             [avlCe]="r.role"
+             (avlCeChange)="emit('sideRoleChange', { idx: i, field: 'role', value: $event })"
+             [avlCeDisabled]="!isEditMode"
+             data-placeholder="Role">
+        </div>
+      </div>
+      <div class="add-row" style="justify-content:flex-start">
+        <button class="add-inline" (click)="emit('addSideRole')">+ Add Side Role</button>
+      </div>
+    </div>
+
+    <!-- ── Tree Area ────────────────────────────────────── -->
+    <div class="tree-area" #treeArea>
+
+      <!-- SVG Lines (declarative) -->
+      <svg class="lines-svg" preserveAspectRatio="none">
+        <path *ngFor="let p of svgPaths; trackBy: trackByIdx"
+              [attr.d]="p.d"
+              [class.dashed]="p.dashed">
+        </path>
+      </svg>
+
+      <!-- ── PM Card ──────────────────────────────────── -->
+      <div class="row row-top">
+        <div class="card pm-card">
+          <div class="header-bar"
+               [avlCe]="state.pm.title"
+               (avlCeChange)="emit('pmTitleChange', $event)"
+               [avlCeDisabled]="!isEditMode"
+               data-placeholder="Role Title">
+          </div>
+          <div class="name-bar"
+               [avlCe]="state.pm.name"
+               (avlCeChange)="emit('pmNameChange', $event)"
+               [avlCeDisabled]="!isEditMode"
+               data-placeholder="Name">
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Coordinators ─────────────────────────────── -->
+      <div class="coord-section"
+           [style.display]="state.options.showCoordinators ? 'flex' : 'none'">
+
+        <!-- Left column -->
+        <div class="coord-col left">
+          <ng-container *ngFor="let c of coordsLeft; let li = index">
+            <ng-container *ngTemplateOutlet="coordCard; context: { c: c, idx: coordIdxInFull('left', li) }"></ng-container>
+          </ng-container>
+        </div>
+
+        <!-- Right column -->
+        <div class="coord-col right">
+          <ng-container *ngFor="let c of coordsRight; let ri = index">
+            <ng-container *ngTemplateOutlet="coordCard; context: { c: c, idx: coordIdxInFull('right', ri) }"></ng-container>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Add Coordinator row -->
+      <div class="add-row" [style.display]="state.options.showCoordinators ? '' : 'none'">
+        <button class="add-inline" (click)="emit('addCoord')">+ Add Coordinator</button>
+        <button class="add-inline dir" (click)="emit('addCoordFromDir')">📇 from directory</button>
+      </div>
+
+      <!-- ── Work Packages ─────────────────────────────── -->
+      <div class="row row-wp">
+        <div class="card wp-card"
+             *ngFor="let wp of state.workPackages; let wi = index; trackBy: trackByIdx"
+             [attr.data-idx]="wi">
+
+          <button class="del-btn" (click)="emit('removeWp', wi)" title="Remove WP">✕</button>
+
+          <div class="header-bar">
+            <span [avlCe]="wp.id"
+                  (avlCeChange)="emit('wpIdChange', { wpIdx: wi, value: $event })"
+                  [avlCeDisabled]="!isEditMode"
+                  data-placeholder="ID" class="wp-id"></span>:
+            <span [avlCe]="wp.title"
+                  (avlCeChange)="emit('wpTitleChange', { wpIdx: wi, value: $event })"
+                  [avlCeDisabled]="!isEditMode"
+                  data-placeholder="Title" class="wp-title"></span>
+          </div>
+
+          <!-- Leads -->
+          <div class="name-bar">
+            <div class="leads-list">
+              <app-person-card
+                *ngFor="let lead of wp.leads; let pi = index; trackBy: trackByIdx"
+                [person]="lead"
+                [contactOpts]="wpContactOpts"
+                avatarSize="tiny"
+                namePlaceholder="Lead name"
+                [isEditMode]="isEditMode"
+                (personChange)="emit('wpLeadChange', { wpIdx: wi, personIdx: pi, partial: $event })"
+                (delete)="emit('removeWpLead', { wpIdx: wi, personIdx: pi })">
+              </app-person-card>
+            </div>
+            <div class="add-inrow-group">
+              <button class="add-inrow" (click)="emit('addWpLead', { wpIdx: wi, fromDir: false })">+ add lead</button>
+              <button class="add-inrow dir" (click)="emit('addWpLead', { wpIdx: wi, fromDir: true })">📇</button>
+            </div>
+          </div>
+
+          <!-- Members -->
+          <div class="members-section" [class.empty]="wp.members.length === 0">
+            <div class="members-title" *ngIf="wp.members.length > 0">Members</div>
+            <div class="members-list">
+              <app-person-card
+                *ngFor="let mem of wp.members; let pi = index; trackBy: trackByIdx"
+                [person]="mem"
+                [contactOpts]="wpContactOpts"
+                avatarSize="tiny"
+                namePlaceholder="Member name"
+                [isEditMode]="isEditMode"
+                (personChange)="emit('wpMemberChange', { wpIdx: wi, personIdx: pi, partial: $event })"
+                (delete)="emit('removeWpMember', { wpIdx: wi, personIdx: pi })">
+              </app-person-card>
+            </div>
+            <div class="add-inrow-group">
+              <button class="add-inrow" (click)="emit('addWpMember', { wpIdx: wi, fromDir: false })">+ add position</button>
+              <button class="add-inrow dir" (click)="emit('addWpMember', { wpIdx: wi, fromDir: true })">📇</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add WP row -->
+      <div class="add-row">
+        <button class="add-inline" (click)="emit('addWp')">+ Add Work Package</button>
+      </div>
+
+      <!-- ── Team Blocks ────────────────────────────────── -->
+      <div class="row row-team" [style.display]="state.options.showTeamLabels ? '' : 'none'">
+        <div class="team-block"
+             *ngFor="let wp of state.workPackages; let wi = index; trackBy: trackByIdx"
+             [attr.data-idx]="wi">
+          <div class="team-label"
+               [avlCe]="wp.team.label"
+               (avlCeChange)="emit('teamLabelChange', { wpIdx: wi, value: $event })"
+               [avlCeDisabled]="!isEditMode"
+               data-placeholder="Team Name">
+          </div>
+          <div class="team-members">
+            <app-person-card
+              *ngFor="let mem of wp.team.members; let mi = index; trackBy: trackByIdx"
+              [person]="mem"
+              [contactOpts]="teamContactOpts"
+              avatarSize="tiny"
+              namePlaceholder="Position"
+              [isEditMode]="isEditMode"
+              (personChange)="emit('teamMemberChange', { wpIdx: wi, memberIdx: mi, partial: $event })"
+              (delete)="emit('removeTeamMember', { wpIdx: wi, memberIdx: mi })">
+            </app-person-card>
+          </div>
+          <div class="add-inrow-group" style="margin-top:4px">
+            <button class="add-inrow" (click)="emit('addTeamMember', { wpIdx: wi, fromDir: false })">+ add position</button>
+            <button class="add-inrow dir" (click)="emit('addTeamMember', { wpIdx: wi, fromDir: true })">📇</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end tree-area -->
+  </div><!-- end chart-body -->
+
+  <!-- ── Bottom Roles ──────────────────────────────────── -->
+  <div class="bottom-roles" [style.display]="state.options.showBottom ? '' : 'none'">
+    <div class="bottom-role"
+         *ngFor="let r of state.bottomRoles; let i = index; trackBy: trackByIdx">
+      <button class="del-btn" (click)="emit('removeBottomRole', i)" title="Remove">✕</button>
+      <span class="role-label"
+            [avlCe]="r.role"
+            (avlCeChange)="emit('bottomRoleChange', { idx: i, field: 'role', value: $event })"
+            [avlCeDisabled]="!isEditMode"
+            data-placeholder="Role Title">
+      </span>:
+      <span class="role-name"
+            [avlCe]="r.name"
+            (avlCeChange)="emit('bottomRoleChange', { idx: i, field: 'name', value: $event })"
+            [avlCeDisabled]="!isEditMode"
+            data-placeholder="Name">
+      </span>
+    </div>
+  </div>
+  <div class="add-row">
+    <button class="add-inline" (click)="emit('addBottomRole')">+ Add Bottom Role</button>
+  </div>
+</div>
+
+<!-- ── Coordinator Card Template ──────────────────────────── -->
+<ng-template #coordCard let-c="c" let-idx="idx">
+  <div class="card coord-card" [attr.data-idx]="idx">
+    <button class="del-btn" (click)="emit('removeCoord', idx)" title="Remove coordinator">✕</button>
+    <div class="card-actions">
+      <span class="pill side-pill" (click)="emit('toggleCoordSide', idx)" title="Toggle left/right">
+        {{ c.side === 'left' ? '◀ left' : 'right ▶' }}
+      </span>
+      <span class="pill line-pill" [class.active]="c.lineStyle === 'dashed'"
+            (click)="emit('toggleCoordLine', idx)" title="Toggle line style">
+        {{ c.lineStyle === 'dashed' ? '┄ dashed' : '── solid' }}
+      </span>
+    </div>
+    <div class="header-bar"
+         [avlCe]="c.title"
+         (avlCeChange)="emit('coordTitleChange', { idx: idx, value: $event })"
+         [avlCeDisabled]="!isEditMode"
+         data-placeholder="Title">
+    </div>
+    <div class="name-bar" [class.with-contact]="coordContactOpts.photo || coordContactOpts.post || coordContactOpts.email || coordContactOpts.phone">
+      <app-person-card
+        [person]="c"
+        [contactOpts]="coordContactOpts"
+        avatarSize="small"
+        namePlaceholder="Name"
+        [showDeleteBtn]="false"
+        [isEditMode]="isEditMode"
+        (personChange)="emit('coordPersonChange', { idx: idx, partial: $event })">
+      </app-person-card>
+    </div>
+  </div>
+</ng-template>

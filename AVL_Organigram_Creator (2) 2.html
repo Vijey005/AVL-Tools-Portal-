@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVL Organigram Creator</title>
+<style>
+  :root {
+    --avl-teal:        #00A8B5;
+    --avl-green:       #7AC74F;
+    --avl-gradient:    linear-gradient(90deg, var(--avl-teal) 0%, var(--avl-green) 100%);
+    --pm-blue:         #4A7BB7;
+    --pm-blue-dark:    #2E5C9C;
+    --gray-dark:       #6B6B6B;
+    --gray-mid:        #A8A8A8;
+    --team-blue:       #1F4E79;
+    --bottom-blue:     #DAE8F4;
+    --bottom-blue-dk:  #B4D0E7;
+    --line-color:      #555;
+    --bg:              #F4F6F8;
+    --text:            #1A1A1A;
+    --muted:           #6C757D;
+    --danger:          #C0392B;
+    --border:          #DDE2E7;
+    --shadow-card:     0 2px 8px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; font-family:'Segoe UI', Tahoma, Verdana, sans-serif;
+    background:var(--bg); color:var(--text); height:100%; overflow:hidden; }
+
+  .app { display:grid; grid-template-rows:auto 1fr; height:100vh; }
+
+  .toolbar { display:flex; align-items:center; gap:8px; padding:10px 16px;
+    background:#fff; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .toolbar .brand { display:flex; align-items:center; gap:10px;
+    padding-right:12px; margin-right:8px; border-right:1px solid var(--border); }
+  .toolbar .brand-dot { width:28px; height:6px; border-radius:3px; background:var(--avl-gradient); }
+  .toolbar .brand-name { font-weight:700; font-size:14px; letter-spacing:.3px; }
+  .toolbar .brand-sub { font-size:11px; color:var(--muted); margin-left:4px; }
+
+  .btn { appearance:none; border:1px solid var(--border); background:#fff; color:var(--text);
+    padding:7px 12px; font-size:13px; border-radius:6px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; transition:all .15s ease; }
+  .btn:hover { background:#F5F7F9; border-color:#BCC2C9; }
+  .btn:active { transform:translateY(1px); }
+  .btn.primary { background:var(--avl-gradient); color:#fff; border-color:transparent; font-weight:600; }
+  .btn.primary:hover { filter:brightness(1.05); }
+  .btn.danger { color:var(--danger); border-color:#E8C5C0; }
+  .btn.danger:hover { background:#FDF2F0; }
+  .btn.small { padding:4px 8px; font-size:11px; }
+  .btn .ico { font-size:14px; line-height:1; }
+  .toolbar .spacer { flex:1; }
+
+  .toggle { display:inline-flex; align-items:center; gap:8px; padding:6px 12px;
+    border:1px solid var(--border); border-radius:999px; cursor:pointer; font-size:13px;
+    background:#fff; user-select:none; }
+  .toggle.on { background:linear-gradient(90deg, rgba(0,168,181,.1), rgba(122,199,79,.1));
+    border-color:var(--avl-teal); color:var(--avl-teal); font-weight:600; }
+  .toggle .dot { width:10px; height:10px; border-radius:50%; background:#CCC; }
+  .toggle.on .dot { background:var(--avl-teal); box-shadow:0 0 0 3px rgba(0,168,181,.2); }
+
+  .canvas-wrap { overflow:auto; background:var(--bg); padding:32px; }
+  .canvas { background:#fff; width:1400px; min-height:800px; margin:0 auto;
+    padding:30px 40px 40px; box-shadow:0 4px 20px rgba(0,0,0,0.08);
+    position:relative; border-radius:4px; }
+
+  .org-title { font-size:32px; font-weight:700; line-height:1.1; margin:0; }
+  .org-subtitle { font-size:22px; font-weight:700; font-style:italic; margin:4px 0 0; }
+  .title-underline { width:220px; height:5px; border-radius:2px;
+    background:var(--avl-gradient); margin:10px 0 26px; }
+
+  .chart-body { display:grid; grid-template-columns:200px 1fr; gap:30px; position:relative; }
+
+  .tree-area { position:relative; min-height:520px; }
+  .lines-svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  .lines-svg path { fill:none; stroke:var(--line-color); stroke-width:1.5; }
+  .lines-svg path.dashed { stroke-dasharray:6 5; }
+
+  .side-roles { display:flex; flex-direction:column; gap:14px; padding-top:30px; }
+  .side-role { background:var(--gray-dark); color:#fff; padding:12px 14px;
+    border-radius:4px; text-align:center; position:relative; box-shadow:var(--shadow-card); }
+  .side-role .name { font-size:14px; font-weight:600; }
+  .side-role .role { font-size:11px; opacity:.9; margin-top:2px; }
+
+  .row { display:flex; justify-content:center; gap:24px; position:relative; z-index:1; }
+  .row.row-top  { margin-bottom:30px; }
+  .row.row-wp   { margin-bottom:14px; align-items:stretch; }
+  .row.row-team { margin-bottom:0; align-items:flex-start; }
+
+  .coord-section { display:flex; justify-content:space-between; margin-bottom:30px;
+    gap:12px; position:relative; z-index:1; }
+  .coord-col { display:flex; flex-direction:column; gap:14px; width:45%; }
+  .coord-col.left  { align-items:flex-end; }
+  .coord-col.right { align-items:flex-start; }
+
+  .card { position:relative; border-radius:3px;
+    box-shadow:2px 3px 0 rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.15);
+    min-width:180px; z-index:2; }
+  .card .header-bar { padding:10px 14px; color:#fff; font-size:13px; font-weight:500;
+    border-radius:3px 3px 0 0; text-align:center; }
+  .card .name-bar { background:#fff; padding:8px 12px; font-size:13px;
+    border:1px solid #ccc; border-top:none; border-radius:0 0 3px 3px;
+    margin:0 16px; text-align:center; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+
+  .pm-card .header-bar { background:linear-gradient(180deg, #6193C7 0%, var(--pm-blue) 60%, var(--pm-blue-dark) 100%);
+    min-width:240px; }
+
+  .coord-card { min-width:240px; }
+  .coord-card .header-bar { background:linear-gradient(180deg, #D5D5D5 0%, var(--gray-mid) 60%, #8E8E8E 100%); color:#fff; }
+  .coord-card .name-bar.with-contact { text-align:left; padding:8px 10px; }
+
+  .wp-card { flex:1; max-width:260px; min-width:200px; }
+  .wp-card .header-bar { background:linear-gradient(180deg, #D5D5D5 0%, var(--gray-mid) 60%, #8E8E8E 100%);
+    color:#fff; text-align:left; padding-left:18px; font-weight:600;
+    clip-path:polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%); padding-right:28px; }
+  .wp-card .name-bar { padding:6px 10px; font-size:12px; border-radius:0; text-align:left; }
+  .wp-card .members-section { margin:0 16px; background:#FAFBFC;
+    border:1px solid #ccc; border-top:1px dashed #C5CCD3;
+    padding:4px 10px 6px; font-size:11px; color:#555; border-radius:0 0 3px 3px; }
+  .wp-card .members-section .members-title { font-size:9px; text-transform:uppercase;
+    letter-spacing:.5px; color:var(--muted); margin:2px 0 3px; font-weight:600; }
+  .wp-card .members-section.empty { border-top:none; padding:0 10px; }
+  .wp-card .members-section.empty .members-list { display:none; }
+
+  .team-block { flex:1; max-width:200px; display:flex; flex-direction:column;
+    align-items:stretch; position:relative; }
+  .team-label { background:var(--team-blue); color:#fff; padding:10px 14px;
+    border-radius:6px; font-size:13px; font-weight:500; text-align:center;
+    min-height:40px; display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--shadow-card); position:relative; }
+  .team-members { margin-top:8px; background:#F5F8FB; border:1px solid #D9E2EC;
+    border-radius:4px; padding:6px 10px; font-size:11px; color:#2A4762; }
+  .team-members:empty { display:none; }
+
+  /* Person rows */
+  .person-row { display:flex; align-items:flex-start; gap:8px;
+    padding:3px 0; text-align:left; position:relative; }
+  .person-row .person-info { flex:1; min-width:0; line-height:1.3; }
+  .person-row .person-name { font-weight:500; }
+  .person-row .person-post { font-size:10px; color:var(--muted); font-style:italic; padding:1px 0; }
+  .person-row .contact-line { font-size:10px; color:#555;
+    display:flex; align-items:center; gap:4px; padding:1px 0; }
+  .person-row .contact-line .ico { font-size:10px; flex-shrink:0; opacity:.7;
+    width:12px; text-align:center; }
+  .person-row .contact-line .ct-text { flex:1; min-width:0; word-break:break-word; }
+  .person-row .row-del { display:none; width:16px; height:16px;
+    border:none; background:transparent; color:var(--danger); cursor:pointer;
+    font-size:14px; line-height:1; padding:0; align-self:flex-start; margin-top:2px; }
+  body.edit-mode .person-row .row-del { display:inline-flex; align-items:center; justify-content:center; }
+
+  .name-bar:not(.with-contact) .person-row { justify-content:center; padding:0; }
+  .name-bar:not(.with-contact) .person-row .person-info { flex:0 1 auto; }
+
+  /* Avatars */
+  .avatar { width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    background: linear-gradient(135deg, #E0E5EB, #C5CCD3) center/cover no-repeat;
+    display:flex; align-items:center; justify-content:center;
+    color:#6C757D; font-size:13px; font-weight:700;
+    border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.15);
+    position:relative; cursor:default; overflow:hidden; user-select:none; }
+  .avatar.small { width:26px; height:26px; font-size:10px; border-width:1px; }
+  .avatar.tiny  { width:22px; height:22px; font-size:9px; border-width:1px; }
+  .avatar.large { width:64px; height:64px; font-size:22px; }
+  .avatar.has-photo { color:transparent; }
+  body.edit-mode .avatar { cursor:pointer; }
+  body.edit-mode .avatar:hover::after {
+    content:'📷'; position:absolute; inset:0;
+    background:rgba(0,0,0,.55); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; }
+
+  [contenteditable="true"] { outline:none; cursor:text; border-radius:2px; transition:background .15s; }
+  body.edit-mode [contenteditable="true"]:hover {
+    background:rgba(0,168,181,0.08); box-shadow:inset 0 0 0 1px rgba(0,168,181,.3); }
+  body.edit-mode [contenteditable="true"]:focus {
+    background:rgba(0,168,181,0.12); box-shadow:inset 0 0 0 1px var(--avl-teal); }
+
+  .card-actions { display:none; position:absolute; top:-10px; right:10px; gap:4px; z-index:5; }
+  body.edit-mode .card-actions { display:inline-flex; }
+  .card-actions .pill { background:#fff; border:1px solid var(--border); border-radius:999px;
+    padding:2px 8px; font-size:10px; color:var(--muted); cursor:pointer;
+    box-shadow:0 1px 3px rgba(0,0,0,.1); line-height:1.4; user-select:none; }
+  .card-actions .pill:hover { color:var(--avl-teal); border-color:var(--avl-teal); }
+  .card-actions .pill.active { color:var(--avl-teal); border-color:var(--avl-teal); font-weight:600; }
+
+  .del-btn { display:none; position:absolute; top:-8px; left:-8px;
+    width:20px; height:20px; background:var(--danger); color:#fff;
+    border:2px solid #fff; border-radius:50%; cursor:pointer;
+    font-size:12px; line-height:1; align-items:center; justify-content:center;
+    z-index:6; padding:0; }
+  body.edit-mode .del-btn { display:inline-flex; }
+
+  .bottom-roles { margin-top:50px; border-top:1px solid var(--border); padding-top:18px; }
+  .bottom-role { background:var(--bottom-blue); border:1px solid var(--bottom-blue-dk);
+    padding:10px 16px; margin-bottom:6px; border-radius:3px; font-size:14px;
+    display:flex; align-items:center; gap:8px; position:relative; }
+  .bottom-role .role-label { font-weight:700; }
+
+  .add-row { display:none; justify-content:center; margin:8px 0; gap:8px; }
+  body.edit-mode .add-row { display:flex; }
+  .add-inline { background:rgba(0,168,181,.06); border:1px dashed var(--avl-teal);
+    color:var(--avl-teal); padding:6px 14px; font-size:12px;
+    border-radius:999px; cursor:pointer; font-weight:600; letter-spacing:.3px; }
+  .add-inline:hover { background:rgba(0,168,181,.12); }
+  .add-inline.small { padding:2px 8px; font-size:10px; }
+  .add-inline.dir { background:rgba(122,199,79,.08); border-color:var(--avl-green); color:#4d8a2c; }
+  .add-inline.dir:hover { background:rgba(122,199,79,.15); }
+
+  .add-inrow-group { display:none; gap:4px; justify-content:center; margin:4px 0 2px; }
+  body.edit-mode .add-inrow-group { display:flex; }
+  .add-inrow { background:transparent; border:1px dashed var(--gray-mid);
+    color:var(--muted); padding:2px 8px; font-size:10px;
+    border-radius:999px; cursor:pointer; }
+  .add-inrow:hover { color:var(--avl-teal); border-color:var(--avl-teal); }
+  .add-inrow.dir { border-color:var(--avl-green); color:#4d8a2c; }
+  .add-inrow.dir:hover { color:#4d8a2c; border-color:var(--avl-green); background:rgba(122,199,79,.06); }
+
+  .status { position:fixed; bottom:20px; right:20px; background:#2A2D34; color:#fff;
+    padding:10px 16px; border-radius:6px; font-size:13px;
+    box-shadow:0 6px 20px rgba(0,0,0,.25); opacity:0; transform:translateY(10px);
+    transition:opacity .25s, transform .25s; pointer-events:none; z-index:100; }
+  .status.show { opacity:1; transform:translateY(0); }
+  .status.error { background:#C0392B; }
+  .status.success { background:#1E8449; }
+
+  .settings-pop { position:absolute; top:56px; right:16px; background:#fff;
+    border:1px solid var(--border); border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,.12); padding:14px; min-width:340px;
+    max-height:80vh; overflow-y:auto;
+    display:none; z-index:50; }
+  .settings-pop.open { display:block; }
+  .settings-pop h4 { margin:12px 0 6px; font-size:11px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:.5px; }
+  .settings-pop h4:first-child { margin-top:0; }
+  .settings-pop label { display:flex; align-items:center; gap:8px; font-size:13px;
+    padding:4px 0; cursor:pointer; }
+  .settings-pop input[type="checkbox"] { accent-color:var(--avl-teal); }
+  .settings-pop .zone-group { background:#F8FAFB; border:1px solid var(--border);
+    border-radius:6px; padding:8px 12px; margin-bottom:8px; }
+  .settings-pop .zone-group .zone-title { font-size:12px; font-weight:700;
+    color:var(--text); margin-bottom:2px; }
+  .settings-pop .zone-group label { padding:2px 0; font-size:12px; }
+  .settings-pop .zone-checks { display:grid; grid-template-columns:1fr 1fr; gap:0 12px; }
+  .settings-pop hr { border:none; border-top:1px solid var(--border); margin:10px 0; }
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.5);
+    display:none; align-items:center; justify-content:center; z-index:200;
+    padding:20px; }
+  .modal-backdrop.open { display:flex; }
+  .modal { background:#fff; border-radius:8px; width:760px; max-width:100%;
+    max-height:88vh; display:flex; flex-direction:column; overflow:hidden;
+    box-shadow:0 12px 40px rgba(0,0,0,.25); }
+  .modal-header { padding:14px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .modal-title { font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px; }
+  .modal-title .ico { font-size:18px; }
+  .modal-title .count-badge { font-size:11px; color:var(--muted); font-weight:400; }
+  .modal-close { background:transparent; border:none; cursor:pointer;
+    width:30px; height:30px; border-radius:50%; font-size:18px; color:var(--muted);
+    display:flex; align-items:center; justify-content:center; }
+  .modal-close:hover { background:#F5F7F9; color:var(--text); }
+  .modal-body { flex:1; overflow-y:auto; padding:16px 20px; }
+  .modal-footer { padding:12px 20px; border-top:1px solid var(--border);
+    display:flex; gap:8px; justify-content:flex-end; }
+
+  .dir-toolbar { display:flex; gap:8px; margin-bottom:14px; align-items:center; }
+  .dir-search { flex:1; padding:8px 12px; border:1px solid var(--border);
+    border-radius:6px; font-size:13px; font-family:inherit; }
+  .dir-search:focus { outline:none; border-color:var(--avl-teal);
+    box-shadow:0 0 0 2px rgba(0,168,181,.2); }
+  .dir-list { display:flex; flex-direction:column; gap:6px; min-height:60px; }
+  .dir-entry { display:flex; align-items:center; gap:12px; padding:10px;
+    border:1px solid var(--border); border-radius:6px; background:#fff; }
+  .dir-entry.clickable { cursor:pointer; }
+  .dir-entry.clickable:hover { background:#F5FAFB; border-color:var(--avl-teal);
+    box-shadow:0 0 0 1px var(--avl-teal); }
+  .dir-entry-info { flex:1; min-width:0; line-height:1.35; }
+  .dir-entry-name { font-weight:600; font-size:14px; }
+  .dir-entry-post { font-size:11px; color:var(--muted); font-style:italic; }
+  .dir-entry-contact { font-size:11px; color:#555; margin-top:2px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dir-entry-actions { display:flex; gap:4px; flex-shrink:0; }
+  .dir-empty { text-align:center; padding:40px 20px; color:var(--muted); font-size:13px; }
+  .dir-empty .ico-big { font-size:36px; margin-bottom:8px; opacity:.5; }
+
+  .dir-editor { display:flex; gap:20px; padding:8px 0; }
+  .dir-editor .editor-photo-col { flex-shrink:0; display:flex; flex-direction:column;
+    align-items:center; gap:6px; }
+  .dir-editor .editor-photo-col .small-link { font-size:10px; color:var(--avl-teal); cursor:pointer; }
+  .dir-editor .editor-fields { flex:1; display:flex; flex-direction:column; gap:10px; }
+  .dir-editor .field { display:flex; flex-direction:column; }
+  .dir-editor .field-label { font-size:10px; color:var(--muted);
+    margin-bottom:3px; text-transform:uppercase; letter-spacing:.4px; font-weight:600; }
+  .dir-editor input { padding:8px 12px; border:1px solid var(--border);
+    border-radius:4px; font-size:13px; font-family:inherit; background:#fff; }
+  .dir-editor input:focus { outline:none; border-color:var(--avl-teal);
+    box-shadow:0 0 0 2px rgba(0,168,181,.2); }
+
+  @media print {
+    @page { size:A3 landscape; margin:10mm; }
+    body { background:#fff; overflow:visible; }
+    .toolbar, .add-row, .add-inrow-group, .del-btn, .row-del, .card-actions, .status,
+    .modal-backdrop { display:none !important; }
+    .canvas-wrap { padding:0; overflow:visible; background:#fff; }
+    .canvas { width:100%; box-shadow:none; padding:10px; }
+    .app { display:block; height:auto; }
+    body.edit-mode .avatar:hover::after { display:none; }
+  }
+
+  [contenteditable="true"]:empty:before {
+    content:attr(data-placeholder); color:rgba(0,0,0,.3); font-style:italic; }
+  .header-bar[contenteditable="true"]:empty:before,
+  .side-role .name[contenteditable="true"]:empty:before,
+  .side-role .role[contenteditable="true"]:empty:before,
+  .team-label[contenteditable="true"]:empty:before {
+    color:rgba(255,255,255,.6); }
+</style>
+</head>
+<body class="edit-mode">
+
+<div class="app">
+
+  <div class="toolbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <div class="brand-name">AVL Organigram Creator</div>
+        <span class="brand-sub">v1.3 · with people directory</span>
+      </div>
+    </div>
+
+    <button class="btn" id="btnNew"><span class="ico">📄</span> New</button>
+    <button class="btn" id="btnLoad"><span class="ico">📂</span> Open</button>
+    <button class="btn primary" id="btnSave"><span class="ico">💾</span> Save</button>
+    <button class="btn" id="btnDirectory"><span class="ico">📇</span> Directory <span id="dirCount" style="font-size:10px;color:var(--muted)">0</span></button>
+    <button class="btn" id="btnPng"><span class="ico">🖼️</span> Export PNG</button>
+    <button class="btn" id="btnPrint"><span class="ico">🖨️</span> Print / PDF</button>
+
+    <div class="spacer"></div>
+
+    <button class="btn" id="btnSettings"><span class="ico">⚙️</span> Options</button>
+    <div class="toggle on" id="btnEditToggle">
+      <span class="dot"></span><span id="editLabel">Edit mode</span>
+    </div>
+
+    <div class="settings-pop" id="settingsPop">
+      <h4>Sections</h4>
+      <label><input type="checkbox" id="optShowSideRoles" checked> Show side roles column</label>
+      <label><input type="checkbox" id="optShowCoordinators" checked> Show coordinators row</label>
+      <label><input type="checkbox" id="optShowTeamLabels" checked> Show team labels under WPs</label>
+      <label><input type="checkbox" id="optShowBottom" checked> Show bottom roles section</label>
+
+      <hr>
+      <h4>Contact details per zone</h4>
+
+      <div class="zone-group">
+        <div class="zone-title">Coordinators</div>
+        <div class="zone-checks">
+          <label><input type="checkbox" data-zone="coord" data-field="photo"> Photo</label>
+          <label><input type="checkbox" data-zone="coord" data-field="post"> Post</label>
+          <label><input type="checkbox" data-zone="coord" data-field="email"> Email</label>
+          <label><input type="checkbox" data-zone="coord" data-field="phone"> Phone</label>
+        </div>
+      </div>
+      <div class="zone-group">
+        <div class="zone-title">Work Packages (leads &amp; members)</div>
+        <div class="zone-checks">
+          <label><input type="checkbox" data-zone="wp" data-field="photo"> Photo</label>
+          <label><input type="checkbox" data-zone="wp" data-field="post"> Post</label>
+          <label><input type="checkbox" data-zone="wp" data-field="email"> Email</label>
+          <label><input type="checkbox" data-zone="wp" data-field="phone"> Phone</label>
+        </div>
+      </div>
+      <div class="zone-group">
+        <div class="zone-title">Teams (team positions)</div>
+        <div class="zone-checks">
+          <label><input type="checkbox" data-zone="team" data-field="photo"> Photo</label>
+          <label><input type="checkbox" data-zone="team" data-field="post"> Post</label>
+          <label><input type="checkbox" data-zone="team" data-field="email"> Email</label>
+          <label><input type="checkbox" data-zone="team" data-field="phone"> Phone</label>
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-top:6px">
+        Use <b>📇 Directory</b> to manage a reusable people database. Then click
+        <b>📇 from directory</b> next to any add-person button to pick instead of typing.
+      </div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div class="canvas" id="canvas">
+
+      <h1 class="org-title" contenteditable="true" data-bind="title" data-placeholder="Project Name">REx Project</h1>
+      <div class="org-subtitle" contenteditable="true" data-bind="subtitle" data-placeholder="Subtitle">Project team AVL</div>
+      <div class="title-underline"></div>
+
+      <div class="chart-body">
+        <div class="side-roles" id="sideRoles"></div>
+
+        <div class="tree-area" id="treeArea">
+          <svg class="lines-svg" id="linesSvg" preserveAspectRatio="none"></svg>
+
+          <div class="row row-top">
+            <div class="card pm-card" id="pmCard">
+              <div class="header-bar" contenteditable="true" data-bind="pmTitle">Project Manager</div>
+              <div class="name-bar"   contenteditable="true" data-bind="pmName">Sebastien Dulphy</div>
+            </div>
+          </div>
+
+          <div class="coord-section" id="coordSection">
+            <div class="coord-col left"  id="coordLeft"></div>
+            <div class="coord-col right" id="coordRight"></div>
+          </div>
+
+          <div class="add-row" id="addCoordRow">
+            <button class="add-inline" id="addCoordBtn">+ Add Coordinator</button>
+            <button class="add-inline dir" id="addCoordDirBtn">📇 from directory</button>
+          </div>
+
+          <div class="row row-wp" id="wpRow"></div>
+          <div class="add-row">
+            <button class="add-inline" id="addWpBtn">+ Add Work Package</button>
+          </div>
+
+          <div class="row row-team" id="teamRow"></div>
+        </div>
+      </div>
+
+      <div class="bottom-roles" id="bottomRoles"></div>
+      <div class="add-row">
+        <button class="add-inline" id="addBottomBtn">+ Add Bottom Role</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<div class="status" id="status"></div>
+
+<script>
+/* AVL Organigram Creator · v1.3 */
+
+const DEFAULT_STATE = {
+  title: "REx Project",
+  subtitle: "Project team AVL",
+  sideRoles: [
+    {name:"Gerald Mair",    role:"Project Coordination"},
+    {name:"Sylvain Joyeux", role:"Project director AVL LMM"},
+    {name:"Yassine DILOO",  role:"TCM"},
+    {name:"Rene Muller",    role:"KAM"}
+  ],
+  pm: {title:"Project Manager", name:"Sebastien Dulphy"},
+  coordinators: [
+    {title:"Technical product manager",     name:"Haarith Mukundan",        post:"", photo:"", email:"", phone:"", side:"left",  lineStyle:"dashed"},
+    {title:"Technical Leader",              name:"Morgan Guillochin (TBC)", post:"", photo:"", email:"", phone:"", side:"right", lineStyle:"solid"},
+    {title:"Global Technical Coordination", name:"(Name)",                  post:"", photo:"", email:"", phone:"", side:"right", lineStyle:"solid"}
+  ],
+  workPackages: [
+    {id:"WP1", title:"HEVC Systems",
+     leads:[mkPerson("Thomas Carayol")], members:[],
+     team:{label:"Systems Team", members:[]}},
+    {id:"WP2", title:"SW ASW Devlopement",
+     leads:[mkPerson("Lucas Monteil")], members:[],
+     team:{label:"SW Team", members:[]}},
+    {id:"WP3", title:"PWT Integration",
+     leads:[mkPerson("Bruno Serre (HW)"), mkPerson("Daniel Cabrita (EE)")], members:[],
+     team:{label:"Design & Integration Team", members:[]}},
+    {id:"WP4", title:"Tuning & testing",
+     leads:[mkPerson("Arnaud Etheve")], members:[],
+     team:{label:"Tuning & Testing Team", members:[]}}
+  ],
+  bottomRoles: [
+    {role:"Design Lead Engineer",  name:"Bruno Tedde"},
+    {role:"Systems Lead Engineer", name:"Thomas Adan"},
+    {role:"EDU Product Manager",   name:"Quentin Bassi"},
+    {role:"ICE Product Manager",   name:"Benjamin Moulene"}
+  ],
+  options: {
+    showSideRoles:    true,
+    showCoordinators: true,
+    showTeamLabels:   true,
+    showBottom:       true,
+    coordContact: {photo:false, post:false, email:false, phone:false},
+    wpContact:    {photo:false, post:false, email:false, phone:false},
+    teamContact:  {photo:false, post:false, email:false, phone:false}
+  }
+};
+
+function mkPerson(name='') {
+  return {name, post:'', photo:'', email:'', phone:'', dirId:''};
+}
+function toPerson(v) {
+  if (v && typeof v === 'object') {
+    return {
+      name:  v.name  || '',
+      post:  v.post  || '',
+      photo: v.photo || '',
+      email: v.email || '',
+      phone: v.phone || '',
+      dirId: v.dirId || ''
+    };
+  }
+  return mkPerson(String(v || ''));
+}
+
+let state = clone(DEFAULT_STATE);
+let directory = [];                       // Array of {id, name, post, email, phone, photo}
+let currentFileHandle = null;
+const DIRECTORY_KEY = 'avl_organigram_directory_v1';
+
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+const $  = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+function showStatus(msg, type='info', ms=2500) {
+  const s = $('#status');
+  s.textContent = msg;
+  s.className = `status show ${type}`;
+  clearTimeout(showStatus._t);
+  showStatus._t = setTimeout(() => s.classList.remove('show'), ms);
+}
+function esc(s='') {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function initials(name='') {
+  const parts = String(name).split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+}
+function genId() {
+  return 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+
+/* ---------- Directory persistence ---------- */
+function loadDirectory() {
+  try {
+    const text = localStorage.getItem(DIRECTORY_KEY);
+    if (!text) { directory = []; return; }
+    const data = JSON.parse(text);
+    directory = Array.isArray(data.entries) ? data.entries.map(e => ({
+      id:    e.id || genId(),
+      name:  e.name || '',
+      post:  e.post || '',
+      email: e.email || '',
+      phone: e.phone || '',
+      photo: e.photo || ''
+    })) : [];
+  } catch (e) {
+    console.warn('Could not load directory', e);
+    directory = [];
+  }
+}
+function saveDirectory() {
+  try {
+    localStorage.setItem(DIRECTORY_KEY,
+      JSON.stringify({version:1, entries:directory}));
+    updateDirectoryCountBadge();
+  } catch (e) {
+    showStatus('Could not save directory (localStorage error)', 'error');
+    console.warn(e);
+  }
+}
+function updateDirectoryCountBadge() {
+  const el = $('#dirCount');
+  if (el) el.textContent = directory.length;
+}
+function findDirectoryEntry(id) {
+  return directory.find(e => e.id === id);
+}
+function entryToPerson(entry) {
+  return {
+    name:  entry.name  || '',
+    post:  entry.post  || '',
+    photo: entry.photo || '',
+    email: entry.email || '',
+    phone: entry.phone || '',
+    dirId: entry.id    || ''
+  };
+}
+
+/* ---------- Migration / normalization ---------- */
+function normalizeState(data) {
+  const d = clone(data || {});
+  const def = DEFAULT_STATE;
+  if (typeof d.title    !== 'string') d.title    = '';
+  if (typeof d.subtitle !== 'string') d.subtitle = '';
+  if (!Array.isArray(d.sideRoles)) d.sideRoles = [];
+  if (!d.pm) d.pm = clone(def.pm);
+
+  if (!Array.isArray(d.coordinators)) {
+    d.coordinators = [];
+    if (d.tpm) d.coordinators.push({title:d.tpm.title||'', name:d.tpm.name||'', side:'left',  lineStyle:'dashed'});
+    if (d.tl)  d.coordinators.push({title:d.tl.title ||'', name:d.tl.name ||'', side:'right', lineStyle:'solid'});
+  }
+  delete d.tpm; delete d.tl;
+  d.coordinators = d.coordinators.map(c => ({
+    title: c.title || '',
+    name:  c.name  || '',
+    post:  c.post  || '',
+    photo: c.photo || '',
+    email: c.email || '',
+    phone: c.phone || '',
+    dirId: c.dirId || '',
+    side:  c.side === 'right' ? 'right' : 'left',
+    lineStyle: c.lineStyle === 'dashed' ? 'dashed' : 'solid'
+  }));
+
+  if (!Array.isArray(d.workPackages) || !d.workPackages.length) {
+    d.workPackages = clone(def.workPackages);
+  }
+  d.workPackages = d.workPackages.map(wp => {
+    const leads   = Array.isArray(wp.leads)   ? wp.leads.map(toPerson)   : [];
+    const members = Array.isArray(wp.members) ? wp.members.map(toPerson) : [];
+    const tm = wp.team && typeof wp.team === 'object'
+      ? {
+          label: wp.team.label || wp.teamLabel || '',
+          members: Array.isArray(wp.team.members) ? wp.team.members.map(toPerson) : []
+        }
+      : {label: wp.teamLabel || '', members: []};
+    return {
+      id:    wp.id || 'WP?',
+      title: wp.title || '',
+      leads: leads.length ? leads : [mkPerson('(Lead)')],
+      members,
+      team: tm
+    };
+  });
+
+  if (!Array.isArray(d.bottomRoles)) d.bottomRoles = [];
+
+  const defOpts = def.options;
+  const o = Object.assign({}, defOpts, d.options || {});
+  o.coordContact = Object.assign({}, defOpts.coordContact, (d.options||{}).coordContact || {});
+  o.wpContact    = Object.assign({}, defOpts.wpContact,    (d.options||{}).wpContact    || {});
+  o.teamContact  = Object.assign({}, defOpts.teamContact,  (d.options||{}).teamContact  || {});
+  d.options = o;
+  return d;
+}
+
+/* ---------- Photo upload ---------- */
+function uploadPhoto(targetObj, cb) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    try {
+      const dataUrl = await resizePhoto(file, 200);
+      targetObj.photo = dataUrl;
+      cb && cb();
+    } catch (e) {
+      showStatus('Could not read image', 'error');
+      console.error(e);
+    }
+  };
+  input.click();
+}
+function resizePhoto(file, maxSize=200) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const scale = Math.min(maxSize / w, maxSize / h, 1);
+      const cw = Math.round(w * scale), ch = Math.round(h * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = cw; canvas.height = ch;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, cw, ch);
+      URL.revokeObjectURL(url);
+      try { resolve(canvas.toDataURL('image/jpeg', 0.82)); }
+      catch (e) { reject(e); }
+    };
+    img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+    img.src = url;
+  });
+}
+
+/* ---------- Person-row renderer ---------- */
+function personRowHtml(person, idx, contactOpts, opt={}) {
+  const showPhoto = !!contactOpts.photo;
+  const showPost  = !!contactOpts.post;
+  const showEmail = !!contactOpts.email;
+  const showPhone = !!contactOpts.phone;
+  const photoStyle = person.photo ? `background-image:url('${person.photo}'); background-color:transparent;` : '';
+  const avatarClass = opt.avatarSize === 'small' ? 'small'
+                    : opt.avatarSize === 'tiny'  ? 'tiny' : '';
+  const initialsTxt = person.photo ? '' : initials(person.name);
+
+  return `
+    <div class="person-row" data-i="${idx}">
+      ${showPhoto ? `
+        <div class="avatar ${avatarClass} ${person.photo ? 'has-photo' : ''}"
+             style="${photoStyle}" data-action="upload-photo" data-i="${idx}"
+             title="Click to upload photo">${esc(initialsTxt)}</div>
+      ` : ''}
+      <div class="person-info">
+        <div class="person-name" contenteditable="true" data-field="name"
+             data-i="${idx}" data-placeholder="${esc(opt.namePlaceholder || 'Name')}">${esc(person.name || '')}</div>
+        ${showPost ? `
+          <div class="person-post" contenteditable="true" data-field="post"
+               data-i="${idx}" data-placeholder="Post / job title">${esc(person.post || '')}</div>` : ''}
+        ${showEmail ? `
+          <div class="contact-line">
+            <span class="ico">✉</span>
+            <span class="ct-text" contenteditable="true" data-field="email"
+                  data-i="${idx}" data-placeholder="email@avl.com">${esc(person.email || '')}</span>
+          </div>` : ''}
+        ${showPhone ? `
+          <div class="contact-line">
+            <span class="ico">☎</span>
+            <span class="ct-text" contenteditable="true" data-field="phone"
+                  data-i="${idx}" data-placeholder="+xx ...">${esc(person.phone || '')}</span>
+          </div>` : ''}
+      </div>
+      <button class="row-del" data-i="${idx}" title="Remove">×</button>
+    </div>
+  `;
+}
+
+function attachPersonRowHandlers(container, list) {
+  container.querySelectorAll('[data-action="upload-photo"]').forEach(el => {
+    el.onclick = () => {
+      const i = +el.dataset.i;
+      uploadPhoto(list[i], () => { renderAll(); showStatus('Photo updated','success',1500); });
+    };
+  });
+  container.querySelectorAll('[contenteditable="true"][data-field]').forEach(el => {
+    el.oninput = e => {
+      const i = +el.dataset.i;
+      const f = el.dataset.field;
+      list[i][f] = e.target.textContent;
+    };
+  });
+  container.querySelectorAll('.row-del').forEach(btn => {
+    btn.onclick = () => { list.splice(+btn.dataset.i, 1); renderAll(); };
+  });
+}
+
+/* ---------- Rendering ---------- */
+function renderAll() {
+  renderSideRoles();
+  renderCoordinators();
+  renderWorkPackages();
+  renderTeams();
+  renderBottomRoles();
+  renderBindings();
+  applyOptions();
+  updateDirectoryCountBadge();
+  requestAnimationFrame(() => requestAnimationFrame(drawLines));
+}
+
+function renderBindings() {
+  $$('[data-bind]').forEach(el => {
+    const k = el.dataset.bind;
+    let v = '';
+    if (k === 'title')    v = state.title;
+    if (k === 'subtitle') v = state.subtitle;
+    if (k === 'pmTitle')  v = state.pm.title;
+    if (k === 'pmName')   v = state.pm.name;
+    if (el.textContent !== v) el.textContent = v;
+  });
+}
+
+function renderSideRoles() {
+  const host = $('#sideRoles');
+  host.innerHTML = '';
+  state.sideRoles.forEach((r, idx) => {
+    const div = document.createElement('div');
+    div.className = 'side-role';
+    div.innerHTML = `
+      <button class="del-btn" title="Remove">✕</button>
+      <div class="name" contenteditable="true" data-placeholder="Name">${esc(r.name)}</div>
+      <div class="role" contenteditable="true" data-placeholder="Role">${esc(r.role)}</div>`;
+    div.querySelector('.del-btn').onclick = () => { state.sideRoles.splice(idx,1); renderAll(); };
+    div.querySelector('.name').oninput = e => state.sideRoles[idx].name = e.target.textContent;
+    div.querySelector('.role').oninput = e => state.sideRoles[idx].role = e.target.textContent;
+    host.appendChild(div);
+  });
+  const addWrap = document.createElement('div');
+  addWrap.className = 'add-row';
+  addWrap.style.justifyContent = 'flex-start';
+  addWrap.innerHTML = `<button class="add-inline">+ Add Side Role</button>`;
+  addWrap.querySelector('button').onclick = () => {
+    state.sideRoles.push({name:'New Person', role:'Role'});
+    renderAll();
+  };
+  host.appendChild(addWrap);
+}
+
+function renderCoordinators() {
+  $('#coordLeft').innerHTML = '';
+  $('#coordRight').innerHTML = '';
+  const cc = state.options.coordContact;
+  const anyContact = cc.photo || cc.post || cc.email || cc.phone;
+
+  state.coordinators.forEach((c, idx) => {
+    const div = document.createElement('div');
+    div.className = 'card coord-card';
+    div.dataset.idx = idx;
+    const personHtml = personRowHtml(c, idx, cc, {namePlaceholder:'Name', avatarSize:'small'});
+
+    div.innerHTML = `
+      <button class="del-btn" title="Remove coordinator">✕</button>
+      <div class="card-actions">
+        <span class="pill side-pill" title="Toggle left/right">${c.side === 'left' ? '◀ left' : 'right ▶'}</span>
+        <span class="pill line-pill ${c.lineStyle === 'dashed' ? 'active' : ''}" title="Toggle line style">${c.lineStyle === 'dashed' ? '┄ dashed' : '── solid'}</span>
+      </div>
+      <div class="header-bar" contenteditable="true" data-placeholder="Title">${esc(c.title)}</div>
+      <div class="name-bar ${anyContact ? 'with-contact' : ''}">${personHtml}</div>`;
+
+    div.querySelector('.del-btn').onclick = () => { state.coordinators.splice(idx,1); renderAll(); };
+    div.querySelector('.header-bar').oninput = e => state.coordinators[idx].title = e.target.textContent;
+    div.querySelector('.side-pill').onclick  = () => {
+      state.coordinators[idx].side = state.coordinators[idx].side === 'left' ? 'right' : 'left';
+      renderAll();
+    };
+    div.querySelector('.line-pill').onclick = () => {
+      state.coordinators[idx].lineStyle = state.coordinators[idx].lineStyle === 'dashed' ? 'solid' : 'dashed';
+      renderAll();
+    };
+    const rowDel = div.querySelector('.person-row .row-del');
+    if (rowDel) rowDel.style.display = 'none';
+
+    const personEl = div.querySelector('.person-row');
+    personEl.querySelectorAll('[contenteditable="true"][data-field]').forEach(el => {
+      el.oninput = e => { state.coordinators[idx][el.dataset.field] = e.target.textContent; };
+    });
+    const av = personEl.querySelector('[data-action="upload-photo"]');
+    if (av) av.onclick = () => uploadPhoto(state.coordinators[idx],
+      () => { renderAll(); showStatus('Photo updated','success',1500); });
+
+    (c.side === 'left' ? $('#coordLeft') : $('#coordRight')).appendChild(div);
+  });
+}
+
+function renderWorkPackages() {
+  const host = $('#wpRow');
+  host.innerHTML = '';
+  const wc = state.options.wpContact;
+
+  state.workPackages.forEach((wp, idx) => {
+    const div = document.createElement('div');
+    div.className = 'card wp-card';
+    div.dataset.idx = idx;
+    const hasMembers = wp.members.length > 0;
+    const leadsHtml   = wp.leads.map((p,i)   => personRowHtml(p, i, wc, {namePlaceholder:'Lead name',   avatarSize:'tiny'})).join('');
+    const membersHtml = wp.members.map((p,i) => personRowHtml(p, i, wc, {namePlaceholder:'Member name', avatarSize:'tiny'})).join('');
+
+    div.innerHTML = `
+      <button class="del-btn" title="Remove WP">✕</button>
+      <div class="header-bar">
+        <span class="wp-id" contenteditable="true" data-placeholder="ID">${esc(wp.id)}</span>:
+        <span class="wp-title" contenteditable="true" data-placeholder="Title">${esc(wp.title)}</span>
+      </div>
+      <div class="name-bar">
+        <div class="leads-list">${leadsHtml}</div>
+        <div class="add-inrow-group">
+          <button class="add-inrow add-lead" type="button">+ add lead</button>
+          <button class="add-inrow dir add-lead-dir" type="button">📇</button>
+        </div>
+      </div>
+      <div class="members-section ${hasMembers ? '' : 'empty'}">
+        ${hasMembers ? '<div class="members-title">Members</div>' : ''}
+        <div class="members-list">${membersHtml}</div>
+        <div class="add-inrow-group">
+          <button class="add-inrow add-member" type="button">+ add position</button>
+          <button class="add-inrow dir add-member-dir" type="button">📇</button>
+        </div>
+      </div>`;
+
+    div.querySelector('.del-btn').onclick = () => {
+      if (state.workPackages.length <= 1) { showStatus('Need at least one WP','error'); return; }
+      state.workPackages.splice(idx,1); renderAll();
+    };
+    div.querySelector('.wp-id').oninput    = e => state.workPackages[idx].id    = e.target.textContent;
+    div.querySelector('.wp-title').oninput = e => state.workPackages[idx].title = e.target.textContent;
+
+    attachPersonRowHandlers(div.querySelector('.leads-list'),   state.workPackages[idx].leads);
+    attachPersonRowHandlers(div.querySelector('.members-list'), state.workPackages[idx].members);
+
+    div.querySelector('.add-lead').onclick = () => {
+      state.workPackages[idx].leads.push(mkPerson('New Lead')); renderAll();
+    };
+    div.querySelector('.add-member').onclick = () => {
+      state.workPackages[idx].members.push(mkPerson('New Position')); renderAll();
+    };
+    div.querySelector('.add-lead-dir').onclick = () => {
+      openDirectoryPicker(entry => {
+        state.workPackages[idx].leads.push(entryToPerson(entry));
+        renderAll();
+      });
+    };
+    div.querySelector('.add-member-dir').onclick = () => {
+      openDirectoryPicker(entry => {
+        state.workPackages[idx].members.push(entryToPerson(entry));
+        renderAll();
+      });
+    };
+    host.appendChild(div);
+  });
+}
+
+function renderTeams() {
+  const host = $('#teamRow');
+  host.innerHTML = '';
+  const tc = state.options.teamContact;
+
+  state.workPackages.forEach((wp, idx) => {
+    const block = document.createElement('div');
+    block.className = 'team-block';
+    block.dataset.idx = idx;
+    const membersHtml = wp.team.members.map((p,i) =>
+      personRowHtml(p, i, tc, {namePlaceholder:'Position', avatarSize:'tiny'})).join('');
+    block.innerHTML = `
+      <div class="team-label" contenteditable="true" data-placeholder="Team Name">${esc(wp.team.label)}</div>
+      <div class="team-members">${membersHtml}</div>
+      <div class="add-inrow-group" style="margin-top:4px">
+        <button class="add-inrow add-tmem" type="button">+ add team position</button>
+        <button class="add-inrow dir add-tmem-dir" type="button">📇</button>
+      </div>`;
+    block.querySelector('.team-label').oninput = e => state.workPackages[idx].team.label = e.target.textContent;
+    attachPersonRowHandlers(block.querySelector('.team-members'), state.workPackages[idx].team.members);
+    block.querySelector('.add-tmem').onclick = () => {
+      state.workPackages[idx].team.members.push(mkPerson('New Position')); renderAll();
+    };
+    block.querySelector('.add-tmem-dir').onclick = () => {
+      openDirectoryPicker(entry => {
+        state.workPackages[idx].team.members.push(entryToPerson(entry));
+        renderAll();
+      });
+    };
+    host.appendChild(block);
+  });
+}
+
+function renderBottomRoles() {
+  const host = $('#bottomRoles');
+  host.innerHTML = '';
+  state.bottomRoles.forEach((r, idx) => {
+    const div = document.createElement('div');
+    div.className = 'bottom-role';
+    div.innerHTML = `
+      <button class="del-btn" title="Remove">✕</button>
+      <span class="role-label" contenteditable="true" data-placeholder="Role Title">${esc(r.role)}:</span>
+      <span class="role-name"  contenteditable="true" data-placeholder="Name">${esc(r.name)}</span>`;
+    div.querySelector('.del-btn').onclick = () => { state.bottomRoles.splice(idx,1); renderAll(); };
+    div.querySelector('.role-label').oninput = e => state.bottomRoles[idx].role = e.target.textContent.replace(/:\s*$/,'');
+    div.querySelector('.role-name').oninput  = e => state.bottomRoles[idx].name = e.target.textContent;
+    host.appendChild(div);
+  });
+}
+
+function applyOptions() {
+  const o = state.options;
+  $('#sideRoles').style.display    = o.showSideRoles    ? '' : 'none';
+  $('#coordSection').style.display = o.showCoordinators ? 'flex' : 'none';
+  $('#addCoordRow').style.display  = o.showCoordinators ? '' : 'none';
+  $('#teamRow').style.display      = o.showTeamLabels   ? '' : 'none';
+  $('#bottomRoles').style.display  = o.showBottom       ? '' : 'none';
+
+  $('#optShowSideRoles').checked    = o.showSideRoles;
+  $('#optShowCoordinators').checked = o.showCoordinators;
+  $('#optShowTeamLabels').checked   = o.showTeamLabels;
+  $('#optShowBottom').checked       = o.showBottom;
+
+  ['coord','wp','team'].forEach(zone => {
+    const key = zone + 'Contact';
+    ['photo','post','email','phone'].forEach(field => {
+      const cb = document.querySelector(`#settingsPop input[data-zone="${zone}"][data-field="${field}"]`);
+      if (cb) cb.checked = !!o[key][field];
+    });
+  });
+
+  $('.chart-body').style.gridTemplateColumns = o.showSideRoles ? '200px 1fr' : '0 1fr';
+}
+
+/* ---------- Connection lines ---------- */
+function drawLines() {
+  const svg  = $('#linesSvg');
+  const tree = $('#treeArea');
+  if (!svg || !tree) return;
+  const rect = tree.getBoundingClientRect();
+  svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+  svg.setAttribute('width', rect.width);
+  svg.setAttribute('height', rect.height);
+  svg.innerHTML = '';
+
+  function center(el) {
+    const r = el.getBoundingClientRect();
+    return {
+      x: r.left - rect.left + r.width/2,
+      top: r.top - rect.top,
+      bottom: r.bottom - rect.top,
+      right: r.right - rect.left,
+      left: r.left - rect.left
+    };
+  }
+  function addPath(d, dashed=false) {
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', d);
+    if (dashed) p.classList.add('dashed');
+    svg.appendChild(p);
+  }
+
+  const pm = $('#pmCard');
+  if (!pm) return;
+  const pmC = center(pm);
+
+  const wps   = Array.from($$('#wpRow .wp-card'));
+  const teams = Array.from($$('#teamRow .team-block'));
+  const coordCards = Array.from(document.querySelectorAll('#coordSection .coord-card'));
+
+  let busYwp = pmC.bottom + 40;
+  if (wps.length) {
+    const topWp = center(wps[0]);
+    busYwp = topWp.top - 18;
+  }
+  const busX = pmC.x;
+
+  addPath(`M ${busX} ${pmC.bottom} L ${busX} ${busYwp}`);
+
+  if (state.options.showCoordinators && coordCards.length) {
+    coordCards.forEach(card => {
+      const idx = +card.dataset.idx;
+      const c = state.coordinators[idx];
+      const cc = center(card);
+      const yMid = (cc.top + cc.bottom) / 2;
+      if (yMid < pmC.bottom || yMid > busYwp) return;
+      const dashed = c.lineStyle === 'dashed';
+      const innerX = c.side === 'left' ? cc.right : cc.left;
+      addPath(`M ${innerX} ${yMid} L ${busX} ${yMid}`, dashed);
+    });
+  }
+
+  if (wps.length) {
+    let busLeft = busX, busRight = busX;
+    wps.forEach(wp => {
+      const c = center(wp);
+      busLeft  = Math.min(busLeft, c.x);
+      busRight = Math.max(busRight, c.x);
+    });
+    if (busRight > busLeft) addPath(`M ${busLeft} ${busYwp} L ${busRight} ${busYwp}`);
+    wps.forEach((wp, i) => {
+      const c = center(wp);
+      addPath(`M ${c.x} ${busYwp} L ${c.x} ${c.top}`);
+      if (state.options.showTeamLabels && teams[i]) {
+        const label = teams[i].querySelector('.team-label');
+        if (label) {
+          const lc = center(label);
+          addPath(`M ${c.x} ${c.bottom} L ${c.x} ${lc.top}`);
+        }
+      }
+    });
+  }
+}
+
+/* ---------- Bindings ---------- */
+function bindEditableHandlers() {
+  $$('[data-bind]').forEach(el => {
+    el.addEventListener('input', e => {
+      const k = el.dataset.bind, v = e.target.textContent;
+      if (k === 'title')    state.title = v;
+      if (k === 'subtitle') state.subtitle = v;
+      if (k === 'pmTitle')  state.pm.title = v;
+      if (k === 'pmName')   state.pm.name  = v;
+    });
+    el.addEventListener('paste', e => {
+      e.preventDefault();
+      const t = (e.clipboardData || window.clipboardData).getData('text');
+      document.execCommand('insertText', false, t);
+    });
+  });
+}
+
+/* ============================================================
+   MODAL infrastructure
+   ============================================================ */
+function openModal(html) {
+  $('#modalContent').innerHTML = html;
+  $('#modalBackdrop').classList.add('open');
+}
+function closeModal() {
+  $('#modalBackdrop').classList.remove('open');
+  $('#modalContent').innerHTML = '';
+}
+$('#modalBackdrop').addEventListener('click', e => {
+  if (e.target === $('#modalBackdrop')) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('#modalBackdrop').classList.contains('open')) {
+    closeModal();
+  }
+});
+
+/* ============================================================
+   DIRECTORY: Manager modal
+   ============================================================ */
+function openDirectoryManager() {
+  const html = `
+    <div class="modal-header">
+      <div class="modal-title">
+        <span class="ico">📇</span> People Directory
+        <span class="count-badge" id="dirMgrCount">${directory.length} ${directory.length === 1 ? 'entry' : 'entries'}</span>
+      </div>
+      <button class="modal-close" data-action="close-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="dir-toolbar">
+        <input class="dir-search" id="dirSearch" placeholder="Search by name or post..." autofocus>
+        <button class="btn primary" id="dirAddBtn">+ Add Person</button>
+        <button class="btn" id="dirImportBtn">Import...</button>
+        <button class="btn" id="dirExportBtn">Export</button>
+      </div>
+      <div class="dir-list" id="dirList"></div>
+    </div>
+  `;
+  openModal(html);
+  renderDirectoryList('', /*pickerMode=*/false);
+  $('.modal-close').onclick = closeModal;
+  $('#dirSearch').oninput = () => renderDirectoryList($('#dirSearch').value, false);
+  $('#dirAddBtn').onclick = () => openEntryEditor(null, /*onAfterSave=*/() => {
+    openDirectoryManager(); // re-open to refresh
+  });
+  $('#dirImportBtn').onclick = importDirectory;
+  $('#dirExportBtn').onclick = exportDirectory;
+}
+
+function openDirectoryPicker(onPick) {
+  if (directory.length === 0) {
+    if (confirm('The directory is empty. Open the directory now to add people?')) {
+      openDirectoryManager();
+    }
+    return;
+  }
+  const html = `
+    <div class="modal-header">
+      <div class="modal-title">
+        <span class="ico">📇</span> Select from Directory
+        <span class="count-badge">${directory.length} ${directory.length === 1 ? 'entry' : 'entries'}</span>
+      </div>
+      <button class="modal-close" data-action="close-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="dir-toolbar">
+        <input class="dir-search" id="dirSearch" placeholder="Search by name or post..." autofocus>
+        <button class="btn" id="dirAddBtn">+ Add new...</button>
+        <button class="btn" id="dirMgrBtn">Manage</button>
+      </div>
+      <div class="dir-list" id="dirList"></div>
+    </div>
+  `;
+  openModal(html);
+  renderDirectoryList('', /*pickerMode=*/true, onPick);
+  $('.modal-close').onclick = closeModal;
+  $('#dirSearch').oninput = () => renderDirectoryList($('#dirSearch').value, true, onPick);
+  $('#dirAddBtn').onclick = () => openEntryEditor(null, (saved) => {
+    if (saved) { onPick(saved); }
+    else { openDirectoryPicker(onPick); }
+  });
+  $('#dirMgrBtn').onclick = openDirectoryManager;
+}
+
+function renderDirectoryList(filterText='', pickerMode=false, onPick=null) {
+  const host = $('#dirList');
+  if (!host) return;
+  const filter = filterText.trim().toLowerCase();
+  const entries = directory
+    .filter(e => !filter ||
+      (e.name||'').toLowerCase().includes(filter) ||
+      (e.post||'').toLowerCase().includes(filter) ||
+      (e.email||'').toLowerCase().includes(filter))
+    .sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+  if (entries.length === 0) {
+    host.innerHTML = directory.length === 0
+      ? `<div class="dir-empty">
+          <div class="ico-big">📇</div>
+          <div>The directory is empty.</div>
+          <div style="margin-top:6px">Click <b>+ Add Person</b> to create your first entry, or <b>Import...</b> to load one from JSON.</div>
+        </div>`
+      : `<div class="dir-empty">
+          <div class="ico-big">🔍</div>
+          <div>No matches for "${esc(filter)}".</div>
+        </div>`;
+    return;
+  }
+
+  host.innerHTML = entries.map(e => {
+    const photoStyle = e.photo ? `background-image:url('${e.photo}'); background-color:transparent;` : '';
+    return `
+      <div class="dir-entry ${pickerMode ? 'clickable' : ''}" data-id="${esc(e.id)}">
+        <div class="avatar small ${e.photo ? 'has-photo' : ''}" style="${photoStyle}">${e.photo ? '' : esc(initials(e.name))}</div>
+        <div class="dir-entry-info">
+          <div class="dir-entry-name">${esc(e.name || '(unnamed)')}</div>
+          ${e.post ? `<div class="dir-entry-post">${esc(e.post)}</div>` : ''}
+          <div class="dir-entry-contact">${esc([e.email, e.phone].filter(Boolean).join('  ·  '))}</div>
+        </div>
+        ${pickerMode ? '' : `
+          <div class="dir-entry-actions">
+            <button class="btn small" data-act="edit">Edit</button>
+            <button class="btn small danger" data-act="del">Delete</button>
+          </div>`}
+      </div>
+    `;
+  }).join('');
+
+  host.querySelectorAll('.dir-entry').forEach(row => {
+    const id = row.dataset.id;
+    if (pickerMode) {
+      row.onclick = () => {
+        const entry = findDirectoryEntry(id);
+        if (entry) {
+          closeModal();
+          onPick && onPick(entry);
+        }
+      };
+    } else {
+      row.querySelector('[data-act="edit"]').onclick = (ev) => {
+        ev.stopPropagation();
+        const entry = findDirectoryEntry(id);
+        if (entry) openEntryEditor(entry, () => openDirectoryManager());
+      };
+      row.querySelector('[data-act="del"]').onclick = (ev) => {
+        ev.stopPropagation();
+        const entry = findDirectoryEntry(id);
+        if (!entry) return;
+        if (!confirm(`Remove "${entry.name}" from the directory?`)) return;
+        directory = directory.filter(x => x.id !== id);
+        saveDirectory();
+        const countEl = $('#dirMgrCount');
+        if (countEl) countEl.textContent = `${directory.length} ${directory.length === 1 ? 'entry' : 'entries'}`;
+        renderDirectoryList($('#dirSearch') ? $('#dirSearch').value : '', false);
+      };
+    }
+  });
+}
+
+function openEntryEditor(existingEntry, onAfterSave) {
+  // Working copy
+  const draft = existingEntry
+    ? clone(existingEntry)
+    : {id: genId(), name:'', post:'', email:'', phone:'', photo:''};
+  const isNew = !existingEntry;
+  const html = `
+    <div class="modal-header">
+      <div class="modal-title">
+        <span class="ico">${isNew ? '➕' : '✏️'}</span> ${isNew ? 'Add Person' : 'Edit Person'}
+      </div>
+      <button class="modal-close" data-action="close-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="dir-editor">
+        <div class="editor-photo-col">
+          <div class="avatar large ${draft.photo ? 'has-photo' : ''}" id="editAvatar"
+               style="${draft.photo ? `background-image:url('${draft.photo}'); background-color:transparent;` : ''}">${draft.photo ? '' : esc(initials(draft.name))}</div>
+          <div class="small-link" id="editPhotoLink">Upload photo</div>
+          ${draft.photo ? '<div class="small-link" id="editPhotoRemove" style="color:var(--danger)">Remove</div>' : ''}
+        </div>
+        <div class="editor-fields">
+          <div class="field">
+            <label class="field-label">Name *</label>
+            <input type="text" id="ef_name" value="${esc(draft.name)}" placeholder="Full name">
+          </div>
+          <div class="field">
+            <label class="field-label">Post</label>
+            <input type="text" id="ef_post" value="${esc(draft.post)}" placeholder="Job title, e.g. Team Leader (Sr. Manager) - Calibration">
+          </div>
+          <div class="field">
+            <label class="field-label">Email</label>
+            <input type="email" id="ef_email" value="${esc(draft.email)}" placeholder="name@avl.com">
+          </div>
+          <div class="field">
+            <label class="field-label">Phone</label>
+            <input type="tel" id="ef_phone" value="${esc(draft.phone)}" placeholder="+xx ...">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      ${isNew ? '' : '<button class="btn danger" id="ef_delete">Delete</button>'}
+      <div style="flex:1"></div>
+      <button class="btn" id="ef_cancel">Cancel</button>
+      <button class="btn primary" id="ef_save">${isNew ? 'Add to Directory' : 'Save'}</button>
+    </div>
+  `;
+  openModal(html);
+
+  $('.modal-close').onclick = () => { if (onAfterSave) onAfterSave(null); else closeModal(); };
+  $('#ef_cancel').onclick   = () => { if (onAfterSave) onAfterSave(null); else closeModal(); };
+
+  // Photo controls
+  const refreshAvatar = () => {
+    const av = $('#editAvatar');
+    if (draft.photo) {
+      av.style.backgroundImage = `url('${draft.photo}')`;
+      av.style.backgroundColor = 'transparent';
+      av.classList.add('has-photo');
+      av.textContent = '';
+    } else {
+      av.style.backgroundImage = '';
+      av.style.backgroundColor = '';
+      av.classList.remove('has-photo');
+      av.textContent = initials($('#ef_name').value);
+    }
+    // Show/hide remove link
+    const linkRow = av.parentElement;
+    let removeLink = linkRow.querySelector('#editPhotoRemove');
+    if (draft.photo && !removeLink) {
+      removeLink = document.createElement('div');
+      removeLink.id = 'editPhotoRemove';
+      removeLink.className = 'small-link';
+      removeLink.style.color = 'var(--danger)';
+      removeLink.textContent = 'Remove';
+      removeLink.onclick = () => { draft.photo = ''; refreshAvatar(); };
+      linkRow.appendChild(removeLink);
+    } else if (!draft.photo && removeLink) {
+      removeLink.remove();
+    }
+  };
+  $('#editAvatar').onclick    = () => uploadPhoto(draft, refreshAvatar);
+  $('#editPhotoLink').onclick = () => uploadPhoto(draft, refreshAvatar);
+  const initialRemoveLink = $('#editPhotoRemove');
+  if (initialRemoveLink) initialRemoveLink.onclick = () => { draft.photo = ''; refreshAvatar(); };
+
+  // Live initials update as name is typed
+  $('#ef_name').oninput = () => { if (!draft.photo) refreshAvatar(); };
+
+  // Save
+  $('#ef_save').onclick = () => {
+    draft.name  = $('#ef_name').value.trim();
+    draft.post  = $('#ef_post').value.trim();
+    draft.email = $('#ef_email').value.trim();
+    draft.phone = $('#ef_phone').value.trim();
+    if (!draft.name) { showStatus('Name is required', 'error'); $('#ef_name').focus(); return; }
+    if (isNew) {
+      directory.push(draft);
+    } else {
+      const idx = directory.findIndex(e => e.id === draft.id);
+      if (idx >= 0) directory[idx] = draft;
+      else directory.push(draft);
+    }
+    saveDirectory();
+    showStatus(isNew ? 'Added to directory' : 'Updated', 'success');
+    if (onAfterSave) onAfterSave(draft);
+    else closeModal();
+  };
+
+  // Delete (edit mode only)
+  if (!isNew) {
+    $('#ef_delete').onclick = () => {
+      if (!confirm(`Remove "${draft.name}" from the directory?`)) return;
+      directory = directory.filter(e => e.id !== draft.id);
+      saveDirectory();
+      showStatus('Removed from directory', 'success');
+      if (onAfterSave) onAfterSave(null);
+      else closeModal();
+    };
+  }
+
+  setTimeout(() => $('#ef_name').focus(), 50);
+}
+
+function importDirectory() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = async () => {
+    const f = input.files[0]; if (!f) return;
+    try {
+      const text = await f.text();
+      const data = JSON.parse(text);
+      let entries = [];
+      if (Array.isArray(data)) entries = data;
+      else if (data && Array.isArray(data.entries)) entries = data.entries;
+      else { showStatus('Unrecognized directory format', 'error'); return; }
+
+      const mode = confirm(`Import ${entries.length} entries.\n\nOK = MERGE into existing directory (duplicate names will be added as separate entries).\nCancel = REPLACE existing directory (current entries will be removed).`)
+        ? 'merge' : 'replace';
+
+      const normalized = entries.map(e => ({
+        id: genId(),
+        name:  e.name  || '',
+        post:  e.post  || '',
+        email: e.email || '',
+        phone: e.phone || '',
+        photo: e.photo || ''
+      })).filter(e => e.name);
+
+      if (mode === 'replace') directory = normalized;
+      else directory = directory.concat(normalized);
+
+      saveDirectory();
+      showStatus(`${mode === 'merge' ? 'Merged' : 'Imported'} ${normalized.length} entries`, 'success');
+      openDirectoryManager();
+    } catch (e) {
+      showStatus('Invalid JSON file', 'error');
+      console.error(e);
+    }
+  };
+  input.click();
+}
+
+async function exportDirectory() {
+  const json = JSON.stringify({version:1, entries:directory}, null, 2);
+  const fileName = `team_directory_${new Date().toISOString().slice(0,10)}.json`;
+  if ('showSaveFilePicker' in window) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{description:'JSON', accept:{'application/json':['.json']}}]
+      });
+      const w = await handle.createWritable();
+      await w.write(json);
+      await w.close();
+      showStatus('Directory exported', 'success');
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+  const blob = new Blob([json], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fileName; a.click();
+  URL.revokeObjectURL(url);
+  showStatus('Directory downloaded', 'success');
+}
+
+/* ---------- Toolbar handlers ---------- */
+$('#btnEditToggle').onclick = () => {
+  const on = !document.body.classList.contains('edit-mode');
+  document.body.classList.toggle('edit-mode', on);
+  $('#btnEditToggle').classList.toggle('on', on);
+  $('#editLabel').textContent = on ? 'Edit mode' : 'View mode';
+  $$('[contenteditable]').forEach(el => el.setAttribute('contenteditable', on ? 'true' : 'false'));
+  setTimeout(drawLines, 50);
+};
+
+$('#btnNew').onclick = () => {
+  if (!confirm('Clear current chart and start blank?')) return;
+  state = normalizeState({
+    title: "New Project",
+    subtitle: "Project team",
+    pm: {title:"Project Manager", name:"(Name)"},
+    coordinators: [],
+    workPackages: [{id:"WP1", title:"Work Package 1",
+                    leads:[mkPerson("(Lead)")], members:[],
+                    team:{label:"Team 1", members:[]}}],
+    sideRoles: [],
+    bottomRoles: [],
+    options: clone(DEFAULT_STATE.options)
+  });
+  currentFileHandle = null;
+  renderAll();
+  showStatus('New chart created', 'success');
+};
+
+$('#btnSave').onclick = async () => {
+  const json = JSON.stringify(state, null, 2);
+  const fileName = `${(state.title || 'organigram').replace(/[^a-z0-9_-]+/gi,'_')}.json`;
+  if ('showSaveFilePicker' in window) {
+    try {
+      const handle = currentFileHandle || await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{description:'JSON', accept:{'application/json':['.json']}}]
+      });
+      currentFileHandle = handle;
+      const w = await handle.createWritable();
+      await w.write(json);
+      await w.close();
+      showStatus('Saved to ' + handle.name, 'success');
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+      console.warn(e);
+    }
+  }
+  const blob = new Blob([json], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fileName; a.click();
+  URL.revokeObjectURL(url);
+  showStatus('Downloaded ' + fileName, 'success');
+};
+
+$('#btnLoad').onclick = async () => {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        types:[{description:'JSON', accept:{'application/json':['.json']}}]
+      });
+      const file = await handle.getFile();
+      const text = await file.text();
+      loadJsonText(text);
+      currentFileHandle = handle;
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json,application/json';
+  input.onchange = async () => {
+    const f = input.files[0]; if (!f) return;
+    loadJsonText(await f.text());
+  };
+  input.click();
+};
+
+function loadJsonText(text) {
+  try {
+    state = normalizeState(JSON.parse(text));
+    renderAll();
+    showStatus('Chart loaded', 'success');
+  } catch (e) {
+    showStatus('Invalid JSON file', 'error');
+    console.error(e);
+  }
+}
+
+$('#btnDirectory').onclick = openDirectoryManager;
+
+$('#btnPrint').onclick = () => {
+  const wasEdit = document.body.classList.contains('edit-mode');
+  if (wasEdit) document.body.classList.remove('edit-mode');
+  setTimeout(() => {
+    window.print();
+    if (wasEdit) document.body.classList.add('edit-mode');
+    setTimeout(drawLines, 100);
+  }, 100);
+};
+
+$('#btnPng').onclick = async () => {
+  showStatus('Generating PNG...', 'info', 1500);
+  try {
+    if (!window.html2canvas) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    const wasEdit = document.body.classList.contains('edit-mode');
+    if (wasEdit) document.body.classList.remove('edit-mode');
+    await new Promise(r => setTimeout(r, 100));
+    drawLines();
+    await new Promise(r => setTimeout(r, 100));
+    const canvas = await html2canvas($('#canvas'), {
+      backgroundColor:'#ffffff', scale:2, useCORS:true, logging:false
+    });
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(state.title || 'organigram').replace(/[^a-z0-9_-]+/gi,'_')}.png`;
+      a.click(); URL.revokeObjectURL(url);
+      showStatus('PNG exported', 'success');
+    });
+    if (wasEdit) document.body.classList.add('edit-mode');
+  } catch (e) {
+    console.error(e);
+    showStatus('PNG export unavailable (network blocked). Use Print → Save as PDF instead.', 'error', 5000);
+  }
+};
+
+/* ---------- Settings ---------- */
+$('#btnSettings').onclick = e => {
+  e.stopPropagation();
+  $('#settingsPop').classList.toggle('open');
+};
+document.addEventListener('click', e => {
+  if (!$('#settingsPop').contains(e.target) && e.target !== $('#btnSettings'))
+    $('#settingsPop').classList.remove('open');
+});
+['optShowSideRoles','optShowCoordinators','optShowTeamLabels','optShowBottom'].forEach(id => {
+  $('#'+id).addEventListener('change', e => {
+    const key = id.replace('opt','');
+    const k = key.charAt(0).toLowerCase() + key.slice(1);
+    state.options[k] = e.target.checked;
+    renderAll();
+  });
+});
+document.querySelectorAll('#settingsPop input[data-zone]').forEach(cb => {
+  cb.addEventListener('change', e => {
+    const zone  = e.target.dataset.zone;
+    const field = e.target.dataset.field;
+    state.options[zone + 'Contact'][field] = e.target.checked;
+    renderAll();
+  });
+});
+
+/* ---------- Add controls ---------- */
+$('#addCoordBtn').onclick = () => {
+  state.coordinators.push({title:'New Coordinator', name:'(Name)',
+    post:'', photo:'', email:'', phone:'', side:'right', lineStyle:'solid'});
+  renderAll();
+};
+$('#addCoordDirBtn').onclick = () => {
+  openDirectoryPicker(entry => {
+    const p = entryToPerson(entry);
+    state.coordinators.push({
+      title:'New Coordinator',
+      name: p.name, post: p.post, photo: p.photo, email: p.email, phone: p.phone, dirId: p.dirId,
+      side:'right', lineStyle:'solid'
+    });
+    renderAll();
+  });
+};
+$('#addWpBtn').onclick = () => {
+  const n = state.workPackages.length + 1;
+  state.workPackages.push({
+    id:'WP'+n, title:'New Work Package',
+    leads:[mkPerson('(Lead)')], members:[],
+    team:{label:'New Team', members:[]}
+  });
+  renderAll();
+};
+$('#addBottomBtn').onclick = () => {
+  state.bottomRoles.push({role:'New Role', name:'(Name)'});
+  renderAll();
+};
+
+/* ---------- Init ---------- */
+window.addEventListener('resize', drawLines);
+loadDirectory();
+state = normalizeState(state);
+bindEditableHandlers();
+renderAll();
+</script>
+</body>
+</html>

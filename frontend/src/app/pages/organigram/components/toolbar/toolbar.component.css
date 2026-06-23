@@ -1,0 +1,80 @@
+/* Toolbar styles — scoped to this component */
+:host { display: block; }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--org-border);
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 12px;
+  margin-right: 8px;
+  border-right: 1px solid var(--org-border);
+}
+.brand-dot  { width: 28px; height: 6px; border-radius: 3px; background: var(--org-avl-gradient); }
+.brand-name { font-weight: 700; font-size: 14px; letter-spacing: .3px; color: var(--org-text); }
+.brand-sub  { font-size: 11px; color: var(--org-muted); margin-left: 4px; }
+
+.spacer { flex: 1; }
+
+.dir-count {
+  font-size: 10px;
+  color: var(--org-muted);
+  margin-left: 2px;
+}
+
+/* Edit toggle pill */
+.toggle {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border: 1px solid var(--org-border);
+  border-radius: 999px; cursor: pointer; font-size: 13px;
+  background: #fff; user-select: none; color: var(--org-text);
+  transition: all .15s;
+}
+.toggle.on {
+  background: linear-gradient(90deg, rgba(0,168,181,.1), rgba(122,199,79,.1));
+  border-color: var(--org-avl-teal); color: var(--org-avl-teal); font-weight: 600;
+}
+.toggle .dot { width: 10px; height: 10px; border-radius: 50%; background: #CCC; transition: .15s; }
+.toggle.on .dot { background: var(--org-avl-teal); box-shadow: 0 0 0 3px rgba(0,168,181,.2); }
+
+/* Settings popover */
+.settings-pop {
+  position: absolute; top: 56px; right: 16px; background: #fff;
+  border: 1px solid var(--org-border); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12); padding: 14px; min-width: 340px;
+  max-height: 80vh; overflow-y: auto;
+  display: none; z-index: 50;
+}
+.settings-pop.open { display: block; }
+.settings-pop h4 {
+  margin: 12px 0 6px; font-size: 11px; color: var(--org-muted);
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.settings-pop h4:first-child { margin-top: 0; }
+.settings-pop label {
+  display: flex; align-items: center; gap: 8px; font-size: 13px;
+  padding: 4px 0; cursor: pointer; color: var(--org-text);
+}
+.settings-pop input[type="checkbox"] { accent-color: var(--org-avl-teal); }
+.settings-pop hr { border: none; border-top: 1px solid var(--org-border); margin: 10px 0; }
+
+.zone-group {
+  background: #F8FAFB; border: 1px solid var(--org-border);
+  border-radius: 6px; padding: 8px 12px; margin-bottom: 8px;
+}
+.zone-title { font-size: 12px; font-weight: 700; color: var(--org-text); margin-bottom: 2px; }
+.zone-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+.zone-checks label { padding: 2px 0; font-size: 12px; }
+
+.settings-hint { font-size: 11px; color: var(--org-muted); line-height: 1.5; margin-top: 6px; }

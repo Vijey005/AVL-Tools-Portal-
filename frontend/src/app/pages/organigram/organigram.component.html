@@ -1,22 +1,130 @@
-<div class="content-wrapper" *ngIf="!loading">
-  <div class="organigram-header animate-in">
-    <div class="title-section">
-      <input class="title-input" [(ngModel)]="state.title" (ngModelChange)="triggerSave()" placeholder="Project Title">
-      <input class="subtitle-input" [(ngModel)]="state.subtitle" (ngModelChange)="triggerSave()" placeholder="Subtitle">
+<!-- Loading state -->
+<div *ngIf="loading" class="org-loading-screen">
+  <div class="org-loading-spinner"></div>
+  <div style="margin-top:12px;font-size:14px;color:#6C757D">Loading organigram…</div>
+</div>
+
+<!-- Full app shell — matches the original HTML body exactly -->
+<div class="app edit-mode" *ngIf="!loading">
+
+  <div class="toolbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <div class="brand-name">AVL Organigram Creator</div>
+        <span class="brand-sub">v1.3 · with people directory</span>
+      </div>
     </div>
 
-    <div class="toolbar">
-      <span class="save-status" [class.saving]="saving">{{ saving ? 'Saving...' : 'Saved' }}</span>
+    <button class="btn" id="btnNew"><span class="ico">📄</span> New</button>
+    <button class="btn" id="btnLoad"><span class="ico">📂</span> Open</button>
+    <button class="btn primary" id="btnSave"><span class="ico">💾</span> Save</button>
+    <button class="btn" id="btnDirectory"><span class="ico">📇</span> Directory <span id="dirCount" style="font-size:10px;color:var(--muted)">0</span></button>
+    <button class="btn" id="btnPng"><span class="ico">🖼️</span> Export PNG</button>
+    <button class="btn" id="btnPrint"><span class="ico">🖨️</span> Print / PDF</button>
+
+    <div class="spacer"></div>
+
+    <button class="btn" id="btnSettings"><span class="ico">⚙️</span> Options</button>
+    <div class="toggle on" id="btnEditToggle">
+      <span class="dot"></span><span id="editLabel">Edit mode</span>
+    </div>
+
+    <div class="settings-pop" id="settingsPop">
+      <h4>Sections</h4>
+      <label><input type="checkbox" id="optShowSideRoles" checked> Show side roles column</label>
+      <label><input type="checkbox" id="optShowCoordinators" checked> Show coordinators row</label>
+      <label><input type="checkbox" id="optShowTeamLabels" checked> Show team labels under WPs</label>
+      <label><input type="checkbox" id="optShowBottom" checked> Show bottom roles section</label>
+
+      <hr>
+      <h4>Contact details per zone</h4>
+
+      <div class="zone-group">
+        <div class="zone-title">Coordinators</div>
+        <div class="zone-checks">
+          <label><input type="checkbox" data-zone="coord" data-field="photo"> Photo</label>
+          <label><input type="checkbox" data-zone="coord" data-field="post"> Post</label>
+          <label><input type="checkbox" data-zone="coord" data-field="email"> Email</label>
+          <label><input type="checkbox" data-zone="coord" data-field="phone"> Phone</label>
+        </div>
+      </div>
+      <div class="zone-group">
+        <div class="zone-title">Work Packages (leads &amp; members)</div>
+        <div class="zone-checks">
+          <label><input type="checkbox" data-zone="wp" data-field="photo"> Photo</label>
+          <label><input type="checkbox" data-zone="wp" data-field="post"> Post</label>
+          <label><input type="checkbox" data-zone="wp" data-field="email"> Email</label>
+          <label><input type="checkbox" data-zone="wp" data-field="phone"> Phone</label>
+        </div>
+      </div>
+      <div class="zone-group">
+        <div class="zone-title">Teams (team positions)</div>
+        <div class="zone-checks">
+          <label><input type="checkbox" data-zone="team" data-field="photo"> Photo</label>
+          <label><input type="checkbox" data-zone="team" data-field="post"> Post</label>
+          <label><input type="checkbox" data-zone="team" data-field="email"> Email</label>
+          <label><input type="checkbox" data-zone="team" data-field="phone"> Phone</label>
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-top:6px">
+        Use <b>📇 Directory</b> to manage a reusable people database. Then click
+        <b>📇 from directory</b> next to any add-person button to pick instead of typing.
+      </div>
     </div>
   </div>
 
-  <div class="canvas-wrapper animate-in" style="animation-delay: 0.1s;">
-    <div class="organigram-tree">
-      <app-org-node 
-        [node]="state.rootNode" 
-        [isRoot]="true" 
-        (changed)="triggerSave()">
-      </app-org-node>
+  <div class="canvas-wrap">
+    <div class="canvas" id="canvas">
+
+      <h1 class="org-title" contenteditable="true" data-bind="title" data-placeholder="Project Name">REx Project</h1>
+      <div class="org-subtitle" contenteditable="true" data-bind="subtitle" data-placeholder="Subtitle">Project team AVL</div>
+      <div class="title-underline"></div>
+
+      <div class="chart-body">
+        <div class="side-roles" data-zone="sideRoles"></div>
+
+        <div class="tree-area" data-zone="treeArea">
+          <svg class="lines-svg" id="linesSvg" preserveAspectRatio="none"></svg>
+
+          <div class="row row-top">
+            <div class="card pm-card" id="pmCard">
+              <div class="header-bar" contenteditable="true" data-bind="pmTitle">Project Manager</div>
+              <div class="name-bar"   contenteditable="true" data-bind="pmName">Sebastien Dulphy</div>
+            </div>
+          </div>
+
+          <div class="coord-section" data-zone="coordSection">
+            <div class="coord-col left"  data-zone="coordLeft"></div>
+            <div class="coord-col right" data-zone="coordRight"></div>
+          </div>
+
+          <div class="add-row" data-zone="addCoordRow" id="addCoordRow">
+            <button class="add-inline" id="addCoordBtn">+ Add Coordinator</button>
+            <button class="add-inline dir" id="addCoordDirBtn">📇 from directory</button>
+          </div>
+
+          <div class="row row-wp" data-zone="wpRow"></div>
+          <div class="add-row">
+            <button class="add-inline" id="addWpBtn">+ Add Work Package</button>
+          </div>
+
+          <div class="row row-team" data-zone="teamRow"></div>
+        </div>
+      </div>
+
+      <div class="bottom-roles" data-zone="bottomRoles"></div>
+      <div class="add-row">
+        <button class="add-inline" id="addBottomBtn">+ Add Bottom Role</button>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<div class="status" id="status"></div>
