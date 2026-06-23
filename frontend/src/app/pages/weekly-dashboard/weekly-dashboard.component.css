@@ -1,0 +1,181 @@
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 20px;
+}
+
+.title-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed transparent;
+  color: #fff;
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: inherit;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.subtitle-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed transparent;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  font-family: inherit;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+.title-input:focus, .title-input:hover,
+.subtitle-input:focus, .subtitle-input:hover {
+  outline: none;
+  border-bottom-color: var(--avl-primary);
+}
+
+.global-status-widget {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+}
+
+.widget-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.faces {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.face {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #000;
+  background: var(--bg-surface-elevated);
+}
+
+.face.clickable {
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.face.clickable:active { transform: scale(0.9); }
+
+.pointer-track {
+  width: 100%;
+  height: 12px;
+  position: relative;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pointer {
+  position: absolute;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 12px solid #fff;
+  transform: translateX(-50%);
+  transition: left 0.3s ease;
+}
+
+.mode-toggles {
+  display: flex;
+  background: var(--bg-base);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.mode-toggles button {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mode-toggles button.active {
+  background: var(--avl-primary);
+  color: #fff;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.spacer { flex: 1; }
+
+.save-status {
+  font-size: 0.85rem;
+  color: var(--status-green);
+  font-weight: 500;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.save-status.saving {
+  color: var(--status-amber);
+  opacity: 1;
+}
+
+.inline-input {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed transparent;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 4px;
+  resize: vertical;
+  min-height: 40px;
+  border-radius: 4px;
+}
+.inline-input:hover { background: rgba(255,255,255,0.05); }
+.inline-input:focus {
+  outline: none;
+  border-color: var(--avl-primary);
+  background: var(--bg-base);
+}
+.inline-input.bold { font-weight: 600; }
+.inline-input.center { text-align: center; }
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-state {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+}

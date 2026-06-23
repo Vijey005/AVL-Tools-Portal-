@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVL Organigram Creator</title>
+<style>
+  :root {
+    --avl-teal:        #00A8B5;
+    --avl-green:       #7AC74F;
+    --avl-gradient:    linear-gradient(90deg, var(--avl-teal) 0%, var(--avl-green) 100%);
+    --pm-blue:         #4A7BB7;
+    --pm-blue-dark:    #2E5C9C;
+    --gray-dark:       #6B6B6B;
+    --gray-mid:        #A8A8A8;
+    --team-blue:       #1F4E79;
+    --bottom-blue:     #DAE8F4;
+    --bottom-blue-dk:  #B4D0E7;
+    --line-color:      #555;
+    --bg:              #F4F6F8;
+    --text:            #1A1A1A;
+    --muted:           #6C757D;
+    --danger:          #C0392B;
+    --border:          #DDE2E7;
+    --shadow-card:     0 2px 8px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; font-family:'Segoe UI', Tahoma, Verdana, sans-serif;
+    background:var(--bg); color:var(--text); height:100%; overflow:hidden; }
+
+  .app { display:grid; grid-template-rows:auto 1fr; height:100vh; }
+
+  .toolbar { display:flex; align-items:center; gap:8px; padding:10px 16px;
+    background:#fff; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .toolbar .brand { display:flex; align-items:center; gap:10px;
+    padding-right:12px; margin-right:8px; border-right:1px solid var(--border); }
+  .toolbar .brand-dot { width:28px; height:6px; border-radius:3px; background:var(--avl-gradient); }
+  .toolbar .brand-name { font-weight:700; font-size:14px; letter-spacing:.3px; }
+  .toolbar .brand-sub { font-size:11px; color:var(--muted); margin-left:4px; }
+
+  .btn { appearance:none; border:1px solid var(--border); background:#fff; color:var(--text);
+    padding:7px 12px; font-size:13px; border-radius:6px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; transition:all .15s ease; }
+  .btn:hover { background:#F5F7F9; border-color:#BCC2C9; }
+  .btn:active { transform:translateY(1px); }
+  .btn.primary { background:var(--avl-gradient); color:#fff; border-color:transparent; font-weight:600; }
+  .btn.primary:hover { filter:brightness(1.05); }
+  .btn .ico { font-size:14px; line-height:1; }
+  .toolbar .spacer { flex:1; }
+
+  .toggle { display:inline-flex; align-items:center; gap:8px; padding:6px 12px;
+    border:1px solid var(--border); border-radius:999px; cursor:pointer; font-size:13px;
+    background:#fff; user-select:none; }
+  .toggle.on { background:linear-gradient(90deg, rgba(0,168,181,.1), rgba(122,199,79,.1));
+    border-color:var(--avl-teal); color:var(--avl-teal); font-weight:600; }
+  .toggle .dot { width:10px; height:10px; border-radius:50%; background:#CCC; }
+  .toggle.on .dot { background:var(--avl-teal); box-shadow:0 0 0 3px rgba(0,168,181,.2); }
+
+  .canvas-wrap { overflow:auto; background:var(--bg); padding:32px; }
+  .canvas { background:#fff; width:1400px; min-height:800px; margin:0 auto;
+    padding:30px 40px 40px; box-shadow:0 4px 20px rgba(0,0,0,0.08);
+    position:relative; border-radius:4px; }
+
+  .org-title { font-size:32px; font-weight:700; line-height:1.1; margin:0; }
+  .org-subtitle { font-size:22px; font-weight:700; font-style:italic; margin:4px 0 0; }
+  .title-underline { width:220px; height:5px; border-radius:2px;
+    background:var(--avl-gradient); margin:10px 0 26px; }
+
+  .chart-body { display:grid; grid-template-columns:200px 1fr; gap:30px; position:relative; }
+
+  .tree-area { position:relative; min-height:520px; }
+  .lines-svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  .lines-svg path { fill:none; stroke:var(--line-color); stroke-width:1.5; }
+  .lines-svg path.dashed { stroke-dasharray:6 5; }
+
+  .side-roles { display:flex; flex-direction:column; gap:14px; padding-top:30px; }
+  .side-role { background:var(--gray-dark); color:#fff; padding:12px 14px;
+    border-radius:4px; text-align:center; position:relative; box-shadow:var(--shadow-card); }
+  .side-role .name { font-size:14px; font-weight:600; }
+  .side-role .role { font-size:11px; opacity:.9; margin-top:2px; }
+
+  .row { display:flex; justify-content:center; gap:24px; position:relative; z-index:1; }
+  .row.row-top  { margin-bottom:30px; }
+  .row.row-wp   { margin-bottom:14px; align-items:stretch; }
+  .row.row-team { margin-bottom:0; align-items:flex-start; }
+
+  .coord-section { display:flex; justify-content:space-between; margin-bottom:30px;
+    gap:12px; position:relative; z-index:1; }
+  .coord-col { display:flex; flex-direction:column; gap:14px; width:45%; }
+  .coord-col.left  { align-items:flex-end; }
+  .coord-col.right { align-items:flex-start; }
+
+  .card { position:relative; border-radius:3px;
+    box-shadow:2px 3px 0 rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.15);
+    min-width:180px; z-index:2; }
+  .card .header-bar { padding:10px 14px; color:#fff; font-size:13px; font-weight:500;
+    border-radius:3px 3px 0 0; text-align:center; }
+  .card .name-bar { background:#fff; padding:8px 12px; font-size:13px;
+    border:1px solid #ccc; border-top:none; border-radius:0 0 3px 3px;
+    margin:0 16px; text-align:center; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+
+  .pm-card .header-bar { background:linear-gradient(180deg, #6193C7 0%, var(--pm-blue) 60%, var(--pm-blue-dark) 100%);
+    min-width:240px; }
+
+  .coord-card { min-width:240px; }
+  .coord-card .header-bar { background:linear-gradient(180deg, #D5D5D5 0%, var(--gray-mid) 60%, #8E8E8E 100%); color:#fff; }
+
+  .wp-card { flex:1; max-width:260px; min-width:200px; }
+  .wp-card .header-bar { background:linear-gradient(180deg, #D5D5D5 0%, var(--gray-mid) 60%, #8E8E8E 100%);
+    color:#fff; text-align:left; padding-left:18px; font-weight:600;
+    clip-path:polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%); padding-right:28px; }
+  .wp-card .name-bar { padding:6px 10px; font-size:12px; border-radius:0; }
+  .wp-card .members-section { margin:0 16px; background:#FAFBFC;
+    border:1px solid #ccc; border-top:1px dashed #C5CCD3;
+    padding:4px 10px 6px; font-size:11px; color:#555; border-radius:0 0 3px 3px; }
+  .wp-card .members-section .members-title { font-size:9px; text-transform:uppercase;
+    letter-spacing:.5px; color:var(--muted); margin:2px 0 3px; font-weight:600; }
+  .wp-card .members-section.empty { border-top:none; padding:0 10px; }
+  .wp-card .members-section.empty .members-list { display:none; }
+
+  .team-block { flex:1; max-width:200px; display:flex; flex-direction:column;
+    align-items:stretch; position:relative; }
+  .team-label { background:var(--team-blue); color:#fff; padding:10px 14px;
+    border-radius:6px; font-size:13px; font-weight:500; text-align:center;
+    min-height:40px; display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--shadow-card); position:relative; }
+  .team-members { margin-top:8px; background:#F5F8FB; border:1px solid #D9E2EC;
+    border-radius:4px; padding:6px 10px; font-size:11px; color:#2A4762; }
+  .team-members:empty { display:none; }
+
+  .row-item { display:flex; align-items:center; gap:4px; justify-content:center; }
+  .row-item .row-text { flex:1; }
+  .row-item .row-del { display:none; width:16px; height:16px;
+    border:none; background:transparent; color:var(--danger); cursor:pointer;
+    font-size:14px; line-height:1; padding:0; }
+  body.edit-mode .row-item .row-del { display:inline-flex; }
+
+  .bottom-roles { margin-top:50px; border-top:1px solid var(--border); padding-top:18px; }
+  .bottom-role { background:var(--bottom-blue); border:1px solid var(--bottom-blue-dk);
+    padding:10px 16px; margin-bottom:6px; border-radius:3px; font-size:14px;
+    display:flex; align-items:center; gap:8px; position:relative; }
+  .bottom-role .role-label { font-weight:700; }
+
+  [contenteditable="true"] { outline:none; cursor:text; border-radius:2px; transition:background .15s; }
+  body.edit-mode [contenteditable="true"]:hover {
+    background:rgba(0,168,181,0.08); box-shadow:inset 0 0 0 1px rgba(0,168,181,.3); }
+  body.edit-mode [contenteditable="true"]:focus {
+    background:rgba(0,168,181,0.12); box-shadow:inset 0 0 0 1px var(--avl-teal); }
+
+  .card-actions { display:none; position:absolute; top:-10px; right:10px; gap:4px; z-index:5; }
+  body.edit-mode .card-actions { display:inline-flex; }
+  .card-actions .pill { background:#fff; border:1px solid var(--border); border-radius:999px;
+    padding:2px 8px; font-size:10px; color:var(--muted); cursor:pointer;
+    box-shadow:0 1px 3px rgba(0,0,0,.1); line-height:1.4; user-select:none; }
+  .card-actions .pill:hover { color:var(--avl-teal); border-color:var(--avl-teal); }
+  .card-actions .pill.active { color:var(--avl-teal); border-color:var(--avl-teal); font-weight:600; }
+
+  .del-btn { display:none; position:absolute; top:-8px; left:-8px;
+    width:20px; height:20px; background:var(--danger); color:#fff;
+    border:2px solid #fff; border-radius:50%; cursor:pointer;
+    font-size:12px; line-height:1; align-items:center; justify-content:center;
+    z-index:6; padding:0; }
+  body.edit-mode .del-btn { display:inline-flex; }
+
+  .add-row { display:none; justify-content:center; margin:8px 0; }
+  body.edit-mode .add-row { display:flex; }
+  .add-inline { background:rgba(0,168,181,.06); border:1px dashed var(--avl-teal);
+    color:var(--avl-teal); padding:6px 14px; font-size:12px;
+    border-radius:999px; cursor:pointer; font-weight:600; letter-spacing:.3px; }
+  .add-inline:hover { background:rgba(0,168,181,.12); }
+  .add-inline.small { padding:2px 8px; font-size:10px; }
+
+  .add-inrow { display:none; margin:4px auto 2px;
+    background:transparent; border:1px dashed var(--gray-mid);
+    color:var(--muted); padding:2px 8px; font-size:10px;
+    border-radius:999px; cursor:pointer; }
+  body.edit-mode .add-inrow { display:block; }
+  .add-inrow:hover { color:var(--avl-teal); border-color:var(--avl-teal); }
+
+  .status { position:fixed; bottom:20px; right:20px; background:#2A2D34; color:#fff;
+    padding:10px 16px; border-radius:6px; font-size:13px;
+    box-shadow:0 6px 20px rgba(0,0,0,.25); opacity:0; transform:translateY(10px);
+    transition:opacity .25s, transform .25s; pointer-events:none; z-index:100; }
+  .status.show { opacity:1; transform:translateY(0); }
+  .status.error { background:#C0392B; }
+  .status.success { background:#1E8449; }
+
+  .settings-pop { position:absolute; top:56px; right:16px; background:#fff;
+    border:1px solid var(--border); border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,.12); padding:14px; min-width:280px;
+    display:none; z-index:50; }
+  .settings-pop.open { display:block; }
+  .settings-pop h4 { margin:0 0 10px; font-size:12px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:.5px; }
+  .settings-pop label { display:flex; align-items:center; gap:8px; font-size:13px;
+    padding:5px 0; cursor:pointer; }
+  .settings-pop input[type="checkbox"] { accent-color:var(--avl-teal); }
+
+  @media print {
+    @page { size:A3 landscape; margin:10mm; }
+    body { background:#fff; overflow:visible; }
+    .toolbar, .add-row, .add-inrow, .del-btn, .row-del, .card-actions, .status { display:none !important; }
+    .canvas-wrap { padding:0; overflow:visible; background:#fff; }
+    .canvas { width:100%; box-shadow:none; padding:10px; }
+    .app { display:block; height:auto; }
+  }
+
+  [contenteditable="true"]:empty:before {
+    content:attr(data-placeholder); color:rgba(0,0,0,.3); font-style:italic; }
+  .header-bar[contenteditable="true"]:empty:before,
+  .side-role .name[contenteditable="true"]:empty:before,
+  .side-role .role[contenteditable="true"]:empty:before,
+  .team-label[contenteditable="true"]:empty:before {
+    color:rgba(255,255,255,.6); }
+</style>
+</head>
+<body class="edit-mode">
+
+<div class="app">
+
+  <div class="toolbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div>
+        <div class="brand-name">AVL Organigram Creator</div>
+        <span class="brand-sub">v1.1 · flexible coordinators &amp; team positions</span>
+      </div>
+    </div>
+
+    <button class="btn" id="btnNew"><span class="ico">📄</span> New</button>
+    <button class="btn" id="btnLoad"><span class="ico">📂</span> Open</button>
+    <button class="btn primary" id="btnSave"><span class="ico">💾</span> Save</button>
+    <button class="btn" id="btnPng"><span class="ico">🖼️</span> Export PNG</button>
+    <button class="btn" id="btnPrint"><span class="ico">🖨️</span> Print / PDF</button>
+
+    <div class="spacer"></div>
+
+    <button class="btn" id="btnSettings"><span class="ico">⚙️</span> Options</button>
+    <div class="toggle on" id="btnEditToggle">
+      <span class="dot"></span><span id="editLabel">Edit mode</span>
+    </div>
+
+    <div class="settings-pop" id="settingsPop">
+      <h4>Sections</h4>
+      <label><input type="checkbox" id="optShowSideRoles" checked> Show side roles column</label>
+      <label><input type="checkbox" id="optShowCoordinators" checked> Show coordinators row</label>
+      <label><input type="checkbox" id="optShowTeamLabels" checked> Show team labels under WPs</label>
+      <label><input type="checkbox" id="optShowBottom" checked> Show bottom roles section</label>
+      <h4 style="margin-top:12px">Tips</h4>
+      <div style="font-size:11px;color:var(--muted);line-height:1.5">
+        Each coordinator card shows <b>side</b> and <b>line-style</b> pills above it in edit mode — click to flip.
+        Click any text to edit. Use ✕ to remove, dashed buttons to add.
+      </div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div class="canvas" id="canvas">
+
+      <h1 class="org-title" contenteditable="true" data-bind="title" data-placeholder="Project Name">New Project</h1>
+      <div class="org-subtitle" contenteditable="true" data-bind="subtitle" data-placeholder="Subtitle">Project Team</div>
+      <div class="title-underline"></div>
+
+      <div class="chart-body">
+
+        <div class="side-roles" id="sideRoles"></div>
+
+        <div class="tree-area" id="treeArea">
+          <svg class="lines-svg" id="linesSvg" preserveAspectRatio="none"></svg>
+
+          <div class="row row-top">
+            <div class="card pm-card" id="pmCard">
+              <div class="header-bar" contenteditable="true" data-bind="pmTitle">Project Manager</div>
+              <div class="name-bar"   contenteditable="true" data-bind="pmName">(Name)</div>
+            </div>
+          </div>
+
+          <div class="coord-section" id="coordSection">
+            <div class="coord-col left"  id="coordLeft"></div>
+            <div class="coord-col right" id="coordRight"></div>
+          </div>
+
+          <div class="add-row" id="addCoordRow">
+            <button class="add-inline" id="addCoordBtn">+ Add Coordinator</button>
+          </div>
+
+          <div class="row row-wp" id="wpRow"></div>
+
+          <div class="add-row">
+            <button class="add-inline" id="addWpBtn">+ Add Work Package</button>
+          </div>
+
+          <div class="row row-team" id="teamRow"></div>
+        </div>
+      </div>
+
+      <div class="bottom-roles" id="bottomRoles"></div>
+      <div class="add-row">
+        <button class="add-inline" id="addBottomBtn">+ Add Bottom Role</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="status" id="status"></div>
+
+<script>
+/* AVL Organigram Creator · v1.1 */
+
+const DEFAULT_STATE = {
+  title: "New Project",
+  subtitle: "Project Team",
+  sideRoles: [],
+  pm: {title:"Project Manager", name:"(Name)"},
+  coordinators: [],
+  workPackages: [
+    {id:"WP1", title:"Work Package 1", leads:["(Lead)"], members:[],
+     team:{label:"Team 1", members:[]}}
+  ],
+  bottomRoles: [],
+  options: {
+    showSideRoles:    true,
+    showCoordinators: true,
+    showTeamLabels:   true,
+    showBottom:       true
+  }
+};
+
+let state = clone(DEFAULT_STATE);
+let currentFileHandle = null;
+
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+const $  = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+function showStatus(msg, type='info', ms=2500) {
+  const s = $('#status');
+  s.textContent = msg;
+  s.className = `status show ${type}`;
+  clearTimeout(showStatus._t);
+  showStatus._t = setTimeout(() => s.classList.remove('show'), ms);
+}
+function esc(s='') {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ---------- Migration ---------- */
+function normalizeState(data) {
+  const d = clone(data || {});
+  const def = DEFAULT_STATE;
+  if (typeof d.title    !== 'string') d.title    = '';
+  if (typeof d.subtitle !== 'string') d.subtitle = '';
+  if (!Array.isArray(d.sideRoles)) d.sideRoles = [];
+  if (!d.pm) d.pm = clone(def.pm);
+
+  // Legacy tpm/tl → coordinators
+  if (!Array.isArray(d.coordinators)) {
+    d.coordinators = [];
+    if (d.tpm) d.coordinators.push({title:d.tpm.title||'', name:d.tpm.name||'', side:'left',  lineStyle:'dashed'});
+    if (d.tl)  d.coordinators.push({title:d.tl.title ||'', name:d.tl.name ||'', side:'right', lineStyle:'solid'});
+  }
+  delete d.tpm; delete d.tl;
+  d.coordinators = d.coordinators.map(c => ({
+    title: c.title || '',
+    name:  c.name  || '',
+    side:  c.side === 'right' ? 'right' : 'left',
+    lineStyle: c.lineStyle === 'dashed' ? 'dashed' : 'solid'
+  }));
+
+  if (!Array.isArray(d.workPackages) || !d.workPackages.length) {
+    d.workPackages = clone(def.workPackages);
+  }
+  d.workPackages = d.workPackages.map(wp => {
+    const leads = Array.isArray(wp.leads) ? wp.leads.map(l => typeof l === 'string' ? l : (l.name||'')) : [];
+    const members = Array.isArray(wp.members) ? wp.members.map(m => typeof m === 'string' ? m : (m.name||'')) : [];
+    const team = wp.team && typeof wp.team === 'object'
+      ? {
+          label: wp.team.label || wp.teamLabel || '',
+          members: Array.isArray(wp.team.members) ? wp.team.members.map(m => typeof m === 'string' ? m : (m.name||'')) : []
+        }
+      : {label: wp.teamLabel || '', members: []};
+    return {
+      id:    wp.id || 'WP?',
+      title: wp.title || '',
+      leads: leads.length ? leads : ['(Lead)'],
+      members,
+      team
+    };
+  });
+
+  if (!Array.isArray(d.bottomRoles)) d.bottomRoles = [];
+  d.options = Object.assign({}, def.options, d.options || {});
+  return d;
+}
+
+/* ---------- Rendering ---------- */
+function renderAll() {
+  renderSideRoles();
+  renderCoordinators();
+  renderWorkPackages();
+  renderTeams();
+  renderBottomRoles();
+  renderBindings();
+  applyOptions();
+  requestAnimationFrame(() => requestAnimationFrame(drawLines));
+}
+
+function renderBindings() {
+  $$('[data-bind]').forEach(el => {
+    const k = el.dataset.bind;
+    let v = '';
+    if (k === 'title')    v = state.title;
+    if (k === 'subtitle') v = state.subtitle;
+    if (k === 'pmTitle')  v = state.pm.title;
+    if (k === 'pmName')   v = state.pm.name;
+    if (el.textContent !== v) el.textContent = v;
+  });
+}
+
+function renderSideRoles() {
+  const host = $('#sideRoles');
+  host.innerHTML = '';
+  state.sideRoles.forEach((r, idx) => {
+    const div = document.createElement('div');
+    div.className = 'side-role';
+    div.innerHTML = `
+      <button class="del-btn" title="Remove">✕</button>
+      <div class="name" contenteditable="true" data-placeholder="Name">${esc(r.name)}</div>
+      <div class="role" contenteditable="true" data-placeholder="Role">${esc(r.role)}</div>`;
+    div.querySelector('.del-btn').onclick = () => { state.sideRoles.splice(idx,1); renderAll(); };
+    div.querySelector('.name').oninput = e => state.sideRoles[idx].name = e.target.textContent;
+    div.querySelector('.role').oninput = e => state.sideRoles[idx].role = e.target.textContent;
+    host.appendChild(div);
+  });
+  const addWrap = document.createElement('div');
+  addWrap.className = 'add-row';
+  addWrap.style.justifyContent = 'flex-start';
+  addWrap.innerHTML = `<button class="add-inline">+ Add Side Role</button>`;
+  addWrap.querySelector('button').onclick = () => {
+    state.sideRoles.push({name:'New Person', role:'Role'});
+    renderAll();
+  };
+  host.appendChild(addWrap);
+}
+
+function renderCoordinators() {
+  $('#coordLeft').innerHTML = '';
+  $('#coordRight').innerHTML = '';
+  state.coordinators.forEach((c, idx) => {
+    const div = document.createElement('div');
+    div.className = 'card coord-card';
+    div.dataset.idx = idx;
+    div.innerHTML = `
+      <button class="del-btn" title="Remove coordinator">✕</button>
+      <div class="card-actions">
+        <span class="pill side-pill" title="Toggle left/right">${c.side === 'left' ? '◀ left' : 'right ▶'}</span>
+        <span class="pill line-pill ${c.lineStyle === 'dashed' ? 'active' : ''}" title="Toggle line style">${c.lineStyle === 'dashed' ? '┄ dashed' : '── solid'}</span>
+      </div>
+      <div class="header-bar" contenteditable="true" data-placeholder="Title">${esc(c.title)}</div>
+      <div class="name-bar"   contenteditable="true" data-placeholder="Name">${esc(c.name)}</div>`;
+    div.querySelector('.del-btn').onclick = () => { state.coordinators.splice(idx,1); renderAll(); };
+    div.querySelector('.header-bar').oninput = e => state.coordinators[idx].title = e.target.textContent;
+    div.querySelector('.name-bar').oninput   = e => state.coordinators[idx].name  = e.target.textContent;
+    div.querySelector('.side-pill').onclick  = () => {
+      state.coordinators[idx].side = state.coordinators[idx].side === 'left' ? 'right' : 'left';
+      renderAll();
+    };
+    div.querySelector('.line-pill').onclick = () => {
+      state.coordinators[idx].lineStyle = state.coordinators[idx].lineStyle === 'dashed' ? 'solid' : 'dashed';
+      renderAll();
+    };
+    (c.side === 'left' ? $('#coordLeft') : $('#coordRight')).appendChild(div);
+  });
+}
+
+function rowListHtml(items, placeholder='Name') {
+  return items.map((v, i) => `
+    <div class="row-item">
+      <span class="row-text" contenteditable="true" data-i="${i}" data-placeholder="${placeholder}">${esc(v)}</span>
+      <button class="row-del" data-i="${i}" title="Remove">×</button>
+    </div>`).join('');
+}
+function attachRowList(container, items) {
+  container.querySelectorAll('.row-text').forEach(el => {
+    el.oninput = e => { items[+e.target.dataset.i] = e.target.textContent; };
+  });
+  container.querySelectorAll('.row-del').forEach(btn => {
+    btn.onclick = () => { items.splice(+btn.dataset.i, 1); renderAll(); };
+  });
+}
+
+function renderWorkPackages() {
+  const host = $('#wpRow');
+  host.innerHTML = '';
+  state.workPackages.forEach((wp, idx) => {
+    const div = document.createElement('div');
+    div.className = 'card wp-card';
+    div.dataset.idx = idx;
+    const hasMembers = wp.members.length > 0;
+    div.innerHTML = `
+      <button class="del-btn" title="Remove WP">✕</button>
+      <div class="header-bar">
+        <span class="wp-id" contenteditable="true" data-placeholder="ID">${esc(wp.id)}</span>:
+        <span class="wp-title" contenteditable="true" data-placeholder="Title">${esc(wp.title)}</span>
+      </div>
+      <div class="name-bar">
+        <div class="leads-list">${rowListHtml(wp.leads, 'Lead name')}</div>
+        <button class="add-inrow add-lead" type="button">+ add lead</button>
+      </div>
+      <div class="members-section ${hasMembers ? '' : 'empty'}">
+        ${hasMembers ? '<div class="members-title">Members</div>' : ''}
+        <div class="members-list">${rowListHtml(wp.members, 'Member name')}</div>
+        <button class="add-inrow add-member" type="button">+ add position</button>
+      </div>`;
+    div.querySelector('.del-btn').onclick = () => {
+      if (state.workPackages.length <= 1) { showStatus('Need at least one WP','error'); return; }
+      state.workPackages.splice(idx,1); renderAll();
+    };
+    div.querySelector('.wp-id').oninput    = e => state.workPackages[idx].id    = e.target.textContent;
+    div.querySelector('.wp-title').oninput = e => state.workPackages[idx].title = e.target.textContent;
+    attachRowList(div.querySelector('.leads-list'),   state.workPackages[idx].leads);
+    attachRowList(div.querySelector('.members-list'), state.workPackages[idx].members);
+    div.querySelector('.add-lead').onclick = () => {
+      state.workPackages[idx].leads.push('New Lead'); renderAll();
+    };
+    div.querySelector('.add-member').onclick = () => {
+      state.workPackages[idx].members.push('New Position'); renderAll();
+    };
+    host.appendChild(div);
+  });
+}
+
+function renderTeams() {
+  const host = $('#teamRow');
+  host.innerHTML = '';
+  state.workPackages.forEach((wp, idx) => {
+    const block = document.createElement('div');
+    block.className = 'team-block';
+    block.dataset.idx = idx;
+    block.innerHTML = `
+      <div class="team-label" contenteditable="true" data-placeholder="Team Name">${esc(wp.team.label)}</div>
+      <div class="team-members">${rowListHtml(wp.team.members, 'Position')}</div>
+      <div class="add-row" style="margin-top:4px">
+        <button class="add-inline small add-tmem">+ add team position</button>
+      </div>`;
+    block.querySelector('.team-label').oninput = e => state.workPackages[idx].team.label = e.target.textContent;
+    attachRowList(block.querySelector('.team-members'), state.workPackages[idx].team.members);
+    block.querySelector('.add-tmem').onclick = () => {
+      state.workPackages[idx].team.members.push('New Position'); renderAll();
+    };
+    host.appendChild(block);
+  });
+}
+
+function renderBottomRoles() {
+  const host = $('#bottomRoles');
+  host.innerHTML = '';
+  state.bottomRoles.forEach((r, idx) => {
+    const div = document.createElement('div');
+    div.className = 'bottom-role';
+    div.innerHTML = `
+      <button class="del-btn" title="Remove">✕</button>
+      <span class="role-label" contenteditable="true" data-placeholder="Role Title">${esc(r.role)}:</span>
+      <span class="role-name"  contenteditable="true" data-placeholder="Name">${esc(r.name)}</span>`;
+    div.querySelector('.del-btn').onclick = () => { state.bottomRoles.splice(idx,1); renderAll(); };
+    div.querySelector('.role-label').oninput = e => state.bottomRoles[idx].role = e.target.textContent.replace(/:\s*$/,'');
+    div.querySelector('.role-name').oninput  = e => state.bottomRoles[idx].name = e.target.textContent;
+    host.appendChild(div);
+  });
+}
+
+function applyOptions() {
+  const o = state.options;
+  $('#sideRoles').style.display    = o.showSideRoles    ? '' : 'none';
+  $('#coordSection').style.display = o.showCoordinators ? 'flex' : 'none';
+  $('#addCoordRow').style.display  = o.showCoordinators ? '' : 'none';
+  $('#teamRow').style.display      = o.showTeamLabels   ? '' : 'none';
+  $('#bottomRoles').style.display  = o.showBottom       ? '' : 'none';
+
+  $('#optShowSideRoles').checked    = o.showSideRoles;
+  $('#optShowCoordinators').checked = o.showCoordinators;
+  $('#optShowTeamLabels').checked   = o.showTeamLabels;
+  $('#optShowBottom').checked       = o.showBottom;
+
+  $('.chart-body').style.gridTemplateColumns = o.showSideRoles ? '200px 1fr' : '0 1fr';
+}
+
+/* ---------- Connection lines ---------- */
+function drawLines() {
+  const svg  = $('#linesSvg');
+  const tree = $('#treeArea');
+  if (!svg || !tree) return;
+  const rect = tree.getBoundingClientRect();
+  svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
+  svg.setAttribute('width', rect.width);
+  svg.setAttribute('height', rect.height);
+  svg.innerHTML = '';
+
+  function center(el) {
+    const r = el.getBoundingClientRect();
+    return {
+      x: r.left - rect.left + r.width/2,
+      top: r.top - rect.top,
+      bottom: r.bottom - rect.top,
+      right: r.right - rect.left,
+      left: r.left - rect.left
+    };
+  }
+  function addPath(d, dashed=false) {
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', d);
+    if (dashed) p.classList.add('dashed');
+    svg.appendChild(p);
+  }
+
+  const pm = $('#pmCard');
+  if (!pm) return;
+  const pmC = center(pm);
+
+  const wps   = Array.from($$('#wpRow .wp-card'));
+  const teams = Array.from($$('#teamRow .team-block'));
+  const coordCards = Array.from(document.querySelectorAll('#coordSection .coord-card'));
+
+  let busYwp = pmC.bottom + 40;
+  if (wps.length) {
+    const topWp = center(wps[0]);
+    busYwp = topWp.top - 18;
+  }
+  const busX = pmC.x;
+
+  // Vertical bus PM → WP-bus
+  addPath(`M ${busX} ${pmC.bottom} L ${busX} ${busYwp}`);
+
+  // Coordinator stubs
+  if (state.options.showCoordinators && coordCards.length) {
+    coordCards.forEach(card => {
+      const idx = +card.dataset.idx;
+      const c = state.coordinators[idx];
+      const cc = center(card);
+      const yMid = (cc.top + cc.bottom) / 2;
+      // skip if yMid is outside the PM→WP bus span (shouldn't happen but safe)
+      if (yMid < pmC.bottom || yMid > busYwp) return;
+      const dashed = c.lineStyle === 'dashed';
+      const innerX = c.side === 'left' ? cc.right : cc.left;
+      addPath(`M ${innerX} ${yMid} L ${busX} ${yMid}`, dashed);
+    });
+  }
+
+  // WP horizontal bus + drops
+  if (wps.length) {
+    let busLeft = busX, busRight = busX;
+    wps.forEach(wp => {
+      const c = center(wp);
+      busLeft = Math.min(busLeft, c.x);
+      busRight = Math.max(busRight, c.x);
+    });
+    if (busRight > busLeft) addPath(`M ${busLeft} ${busYwp} L ${busRight} ${busYwp}`);
+    wps.forEach((wp, i) => {
+      const c = center(wp);
+      addPath(`M ${c.x} ${busYwp} L ${c.x} ${c.top}`);
+      if (state.options.showTeamLabels && teams[i]) {
+        const label = teams[i].querySelector('.team-label');
+        if (label) {
+          const lc = center(label);
+          addPath(`M ${c.x} ${c.bottom} L ${c.x} ${lc.top}`);
+        }
+      }
+    });
+  }
+}
+
+/* ---------- Binding for non-list editable fields ---------- */
+function bindEditableHandlers() {
+  $$('[data-bind]').forEach(el => {
+    el.addEventListener('input', e => {
+      const k = el.dataset.bind, v = e.target.textContent;
+      if (k === 'title')    state.title = v;
+      if (k === 'subtitle') state.subtitle = v;
+      if (k === 'pmTitle')  state.pm.title = v;
+      if (k === 'pmName')   state.pm.name  = v;
+    });
+    el.addEventListener('paste', e => {
+      e.preventDefault();
+      const t = (e.clipboardData || window.clipboardData).getData('text');
+      document.execCommand('insertText', false, t);
+    });
+  });
+}
+
+/* ---------- Toolbar ---------- */
+$('#btnEditToggle').onclick = () => {
+  const on = !document.body.classList.contains('edit-mode');
+  document.body.classList.toggle('edit-mode', on);
+  $('#btnEditToggle').classList.toggle('on', on);
+  $('#editLabel').textContent = on ? 'Edit mode' : 'View mode';
+  $$('[contenteditable]').forEach(el => el.setAttribute('contenteditable', on ? 'true' : 'false'));
+  setTimeout(drawLines, 50);
+};
+
+$('#btnNew').onclick = () => {
+  if (!confirm('Clear current chart and start blank?')) return;
+  state = normalizeState({
+    title: "New Project",
+    subtitle: "Project team",
+    pm: {title:"Project Manager", name:"(Name)"},
+    coordinators: [],
+    workPackages: [{id:"WP1", title:"Work Package 1", leads:["(Lead)"], members:[], team:{label:"Team 1", members:[]}}],
+    sideRoles: [],
+    bottomRoles: [],
+    options: clone(DEFAULT_STATE.options)
+  });
+  currentFileHandle = null;
+  renderAll();
+  showStatus('New chart created', 'success');
+};
+
+$('#btnSave').onclick = async () => {
+  const json = JSON.stringify(state, null, 2);
+  const fileName = `${(state.title || 'organigram').replace(/[^a-z0-9_-]+/gi,'_')}.json`;
+  if ('showSaveFilePicker' in window) {
+    try {
+      const handle = currentFileHandle || await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{description:'JSON', accept:{'application/json':['.json']}}]
+      });
+      currentFileHandle = handle;
+      const w = await handle.createWritable();
+      await w.write(json);
+      await w.close();
+      showStatus('Saved to ' + handle.name, 'success');
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+      console.warn(e);
+    }
+  }
+  const blob = new Blob([json], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fileName; a.click();
+  URL.revokeObjectURL(url);
+  showStatus('Downloaded ' + fileName, 'success');
+};
+
+$('#btnLoad').onclick = async () => {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        types:[{description:'JSON', accept:{'application/json':['.json']}}]
+      });
+      const file = await handle.getFile();
+      const text = await file.text();
+      loadJsonText(text);
+      currentFileHandle = handle;
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json,application/json';
+  input.onchange = async () => {
+    const f = input.files[0]; if (!f) return;
+    loadJsonText(await f.text());
+  };
+  input.click();
+};
+
+function loadJsonText(text) {
+  try {
+    state = normalizeState(JSON.parse(text));
+    renderAll();
+    showStatus('Chart loaded', 'success');
+  } catch (e) {
+    showStatus('Invalid JSON file', 'error');
+    console.error(e);
+  }
+}
+
+$('#btnPrint').onclick = () => {
+  const wasEdit = document.body.classList.contains('edit-mode');
+  if (wasEdit) document.body.classList.remove('edit-mode');
+  setTimeout(() => {
+    window.print();
+    if (wasEdit) document.body.classList.add('edit-mode');
+    setTimeout(drawLines, 100);
+  }, 100);
+};
+
+$('#btnPng').onclick = async () => {
+  showStatus('Generating PNG...', 'info', 1500);
+  try {
+    if (!window.html2canvas) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    const wasEdit = document.body.classList.contains('edit-mode');
+    if (wasEdit) document.body.classList.remove('edit-mode');
+    await new Promise(r => setTimeout(r, 100));
+    drawLines();
+    await new Promise(r => setTimeout(r, 100));
+    const canvas = await html2canvas($('#canvas'), {
+      backgroundColor:'#ffffff', scale:2, useCORS:true, logging:false
+    });
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${(state.title || 'organigram').replace(/[^a-z0-9_-]+/gi,'_')}.png`;
+      a.click(); URL.revokeObjectURL(url);
+      showStatus('PNG exported', 'success');
+    });
+    if (wasEdit) document.body.classList.add('edit-mode');
+  } catch (e) {
+    console.error(e);
+    showStatus('PNG export unavailable (network blocked). Use Print → Save as PDF instead.', 'error', 5000);
+  }
+};
+
+$('#btnSettings').onclick = e => {
+  e.stopPropagation();
+  $('#settingsPop').classList.toggle('open');
+};
+document.addEventListener('click', e => {
+  if (!$('#settingsPop').contains(e.target) && e.target !== $('#btnSettings'))
+    $('#settingsPop').classList.remove('open');
+});
+['optShowSideRoles','optShowCoordinators','optShowTeamLabels','optShowBottom'].forEach(id => {
+  $('#'+id).addEventListener('change', e => {
+    const key = id.replace('opt','');
+    const k = key.charAt(0).toLowerCase() + key.slice(1);
+    state.options[k] = e.target.checked;
+    renderAll();
+  });
+});
+
+$('#addCoordBtn').onclick = () => {
+  state.coordinators.push({title:'New Coordinator', name:'(Name)', side:'right', lineStyle:'solid'});
+  renderAll();
+};
+$('#addWpBtn').onclick = () => {
+  const n = state.workPackages.length + 1;
+  state.workPackages.push({
+    id:'WP'+n, title:'New Work Package',
+    leads:['(Lead)'], members:[],
+    team:{label:'New Team', members:[]}
+  });
+  renderAll();
+};
+$('#addBottomBtn').onclick = () => {
+  state.bottomRoles.push({role:'New Role', name:'(Name)'});
+  renderAll();
+};
+
+window.addEventListener('resize', drawLines);
+state = normalizeState(state);
+bindEditableHandlers();
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Brand Accents */
+  --avl-accent: hsl(180, 100%, 25%);
+  --avl-accent-glow: hsla(180, 100%, 25%, 0.4);
+  --avl-primary: hsl(190, 80%, 45%);
+  --avl-primary-hover: hsl(190, 80%, 55%);
+  
+  /* Modern Dark Theme Backgrounds */
+  --bg-base: #080c10;
+  --bg-surface: #10151c;
+  --bg-surface-elevated: #161c24;
+  --bg-card: rgba(16, 21, 28, 0.65);
+  
+  /* Text */
+  --text-main: #f0f4f8;
+  --text-muted: #9ba3af;
+  --text-inverse: #000000;
+  
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(255, 255, 255, 0.15);
+  
+  /* Status Colors */
+  --status-green: hsl(145, 60%, 45%);
+  --status-amber: hsl(40, 90%, 55%);
+  --status-red: hsl(355, 75%, 60%);
+
+  /* Effects */
+  --glass-blur: blur(16px);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  /* Subtle animated background gradient */
+  background: radial-gradient(circle at 15% 50%, rgba(0, 128, 128, 0.04), transparent 50%),
+              radial-gradient(circle at 85% 30%, rgba(88, 166, 255, 0.04), transparent 50%);
+  background-color: var(--bg-base);
+}
+
+h1, h2, h3, h4, h5 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+/* Base App Layout */
+.content-wrapper {
+  padding-top: 80px; /* Navbar space */
+  min-height: 100vh;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* Form Inputs */
+.form-control {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--avl-primary);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Premium Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: 'Inter', sans-serif;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--avl-primary);
+  color: #fff;
+  box-shadow: 0 4px 12px var(--avl-accent-glow);
+}
+
+.btn-primary:hover {
+  background: var(--avl-primary-hover);
+  box-shadow: 0 6px 16px var(--avl-accent-glow);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  border-color: var(--border-subtle);
+  color: var(--text-main);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-surface-elevated);
+  border-color: var(--border-focus);
+}
+
+.btn-danger {
+  background: hsla(355, 75%, 60%, 0.15);
+  color: var(--status-red);
+  border-color: hsla(355, 75%, 60%, 0.3);
+}
+
+.btn-danger:hover {
+  background: var(--status-red);
+  color: #fff;
+}
+
+/* Glassmorphism Cards */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Animations */
+@keyframes slideUpFade {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-surface-elevated);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-focus);
+}

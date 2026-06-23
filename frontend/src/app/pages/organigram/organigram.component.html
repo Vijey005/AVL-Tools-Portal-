@@ -1,0 +1,22 @@
+<div class="content-wrapper" *ngIf="!loading">
+  <div class="organigram-header animate-in">
+    <div class="title-section">
+      <input class="title-input" [(ngModel)]="state.title" (ngModelChange)="triggerSave()" placeholder="Project Title">
+      <input class="subtitle-input" [(ngModel)]="state.subtitle" (ngModelChange)="triggerSave()" placeholder="Subtitle">
+    </div>
+
+    <div class="toolbar">
+      <span class="save-status" [class.saving]="saving">{{ saving ? 'Saving...' : 'Saved' }}</span>
+    </div>
+  </div>
+
+  <div class="canvas-wrapper animate-in" style="animation-delay: 0.1s;">
+    <div class="organigram-tree">
+      <app-org-node 
+        [node]="state.rootNode" 
+        [isRoot]="true" 
+        (changed)="triggerSave()">
+      </app-org-node>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AVL Weekly Dashboard v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --avl-teal:#00838F;
+    --avl-teal-dark:#005662;
+    --avl-green:#4CAF50;
+    --avl-blue:#1976D2;
+    --avl-blue-dark:#0D47A1;
+    --grad: linear-gradient(135deg,#00838F 0%,#26A69A 50%,#66BB6A 100%);
+    --row-bg:#E3E9F2;
+    --row-alt:#EDF1F7;
+    --border:#B0BEC5;
+    --text:#263238;
+    --green:#4CAF50;
+    --amber:#FFC107;
+    --red:#E53935;
+    --muted:#607D8B;
+    --bg1:#F4FAFB;
+    --bg2:#EEF3F9;
+    --card-shadow:0 14px 32px rgba(9, 30, 66, 0.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:'Manrope','Segoe UI',Tahoma,Arial,sans-serif;color:var(--text);background:linear-gradient(145deg,var(--bg1),var(--bg2))}
+  body{padding:16px 20px 42px;position:relative;min-height:100vh}
+  body::before, body::after{
+    content:"";position:fixed;border-radius:50%;pointer-events:none;z-index:-1;filter:blur(2px);
+  }
+  body::before{width:340px;height:340px;top:-90px;right:-80px;background:radial-gradient(circle,rgba(38,166,154,.22),transparent 70%)}
+  body::after{width:420px;height:420px;bottom:-170px;left:-120px;background:radial-gradient(circle,rgba(25,118,210,.15),transparent 70%)}
+
+  /* ===== Toolbar ===== */
+  .toolbar{
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+    background:rgba(255,255,255,.88);border:1px solid #d8e2ea;border-radius:12px;
+    padding:10px 14px;margin-bottom:10px;
+    box-shadow:0 8px 22px rgba(13,71,161,0.07);
+    backdrop-filter:blur(6px);
+  }
+  .toolbar.row2{margin-bottom:14px}
+  .toolbar .group{display:flex;gap:6px;align-items:center}
+  .toolbar .sep{width:1px;height:24px;background:var(--border);margin:0 4px}
+  .toolbar .spacer{flex:1}
+  .toolbar label{font-size:12px;color:var(--muted);font-weight:600}
+  .toolbar input[type="text"], .toolbar input[type="week"], .toolbar select{
+    border:1px solid var(--border);border-radius:5px;padding:4px 7px;font-size:13px;
+    background:#fff;
+  }
+  .btn{
+    border:none;padding:6px 11px;border-radius:5px;cursor:pointer;
+    font-size:13px;font-weight:600;color:#fff;background:var(--avl-teal);
+    transition:background .15s, transform .05s;
+    display:inline-flex;align-items:center;gap:5px;
+    font-family:'Space Grotesk','Manrope',sans-serif;
+  }
+  .btn:hover{background:var(--avl-teal-dark)}
+  .btn:active{transform:translateY(1px)}
+  .btn.sm{padding:4px 8px;font-size:12px}
+  .btn.alt{background:var(--avl-blue)}
+  .btn.alt:hover{background:var(--avl-blue-dark)}
+  .btn.ghost{background:#fff;color:var(--avl-teal-dark);border:1px solid var(--avl-teal)}
+  .btn.ghost:hover{background:#E0F2F1}
+  .btn.danger{background:#C62828}
+  .btn.danger:hover{background:#8E0000}
+
+  /* ===== Dashboard frame ===== */
+  #dashboard{
+    background:linear-gradient(180deg,#fff 0%,#fbfdff 100%);border-radius:16px;padding:20px 22px 18px;
+    box-shadow:var(--card-shadow);
+    border-top:5px solid;border-image:var(--grad) 1;
+    border:1px solid #e2eaf2;
+  }
+  .home-hero{
+    display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:16px;
+  }
+  .hero-card{
+    background:linear-gradient(120deg,#073B6F 0%,#0B5B95 45%,#00838F 100%);
+    color:#fff;border-radius:14px;padding:14px 16px 16px;position:relative;overflow:hidden;
+  }
+  .hero-card::after{
+    content:"";position:absolute;right:-36px;top:-36px;width:140px;height:140px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.35),rgba(255,255,255,0));
+  }
+  .hero-overline{font-size:11px;text-transform:uppercase;letter-spacing:.12em;opacity:.8;font-weight:700}
+  .hero-title{font-family:'Space Grotesk','Manrope',sans-serif;font-size:22px;font-weight:700;line-height:1.2;margin:6px 0 7px}
+  .hero-sub{font-size:13px;opacity:.92;margin-bottom:12px}
+  .hero-chips{display:flex;gap:8px;flex-wrap:wrap}
+  .hero-chip{
+    background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);border-radius:999px;
+    padding:4px 10px;font-size:12px;font-weight:600;backdrop-filter:blur(2px)
+  }
+  .meta-card{
+    background:#fff;border:1px solid #d9e4ef;border-radius:14px;padding:12px 14px;
+    display:grid;gap:10px;align-content:center;
+  }
+  .meta-block{display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .meta-k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+  .meta-v{font-size:13px;font-weight:700;color:#10324f}
+  .meta-divider{height:1px;background:#e3edf6}
+  .head{
+    background:#fff;border:1px solid #dce7f1;border-radius:14px;padding:14px;
+  }
+  .head{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start;margin-bottom:12px}
+  .head .title h1{
+    font-size:28px;font-weight:700;color:var(--avl-blue);margin:0 0 4px;
+    letter-spacing:-0.3px;
+    font-family:'Space Grotesk','Manrope',sans-serif;
+  }
+  .head .title .sub{font-size:14px;color:var(--text);font-weight:500;margin-bottom:6px}
+  .head .title .week-pill{
+    display:inline-block;background:var(--avl-teal);color:#fff;
+    padding:2px 10px;border-radius:11px;font-size:12px;font-weight:600;
+    margin-left:8px;vertical-align:middle;
+  }
+  .head .title .underline{height:3px;width:160px;background:var(--grad);border-radius:2px;margin-top:4px}
+  .head [contenteditable="true"]{outline:none;border-bottom:1px dashed transparent;padding:1px 2px}
+  .head [contenteditable="true"]:hover{border-bottom-color:var(--avl-teal)}
+  .head [contenteditable="true"]:focus{border-bottom-color:var(--avl-teal);background:#F1F8E9}
+
+  .global-status{
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:#fff;padding:4px 0 0;min-width:220px;
+  }
+  .global-status .label{font-size:16px;font-weight:500;color:var(--text)}
+  .traj-widget{
+    display:inline-flex;flex-direction:column;align-items:stretch;
+    border:1.5px solid var(--text);border-radius:3px;background:#fff;padding:0;
+    position:relative;width:88px;
+  }
+  .traj-widget .traj-label{font-size:11px;font-weight:500;text-align:center;width:100%;border-bottom:1px solid var(--text);padding:1px 0 2px}
+  .traj-widget .traj-body{display:flex;flex-direction:column;width:100%;padding:3px 0 1px}
+  .traj-widget .traj-faces{display:flex;width:100%}
+  .traj-widget .face-cell{flex:1;display:flex;justify-content:center;align-items:center}
+  .traj-widget .pointer-track{position:relative;height:12px;width:100%;margin-top:1px}
+  .traj-widget .pointer{
+    position:absolute;top:0;
+    width:0;height:0;
+    border-left:6px solid transparent;
+    border-right:6px solid transparent;
+    border-bottom:9px solid var(--text);
+    transform:translateX(-50%);
+    transition:left .15s ease-out;
+  }
+  .traj-widget .pointer.hidden{display:none}
+  .traj-widget.compact{transform:scale(0.82);transform-origin:center;margin:-3px 0}
+  .traj-widget.lg{width:240px}
+  .traj-widget.lg .face{width:36px;height:36px}
+  .traj-widget.lg .pointer-track{height:18px}
+  .traj-widget.lg .pointer{border-left-width:9px;border-right-width:9px;border-bottom-width:13px}
+  .traj-widget.lg .traj-label{font-size:13px;padding:3px 0 4px}
+  .traj-widget.lg .traj-body{padding:6px 0 3px}
+
+  .global-mode-toggle{
+    display:inline-flex;border:1px solid var(--border);border-radius:14px;overflow:hidden;
+    font-size:11px;font-weight:600;background:#fff;
+  }
+  .global-mode-toggle button{
+    background:transparent;border:none;padding:3px 12px;cursor:pointer;color:var(--muted);
+  }
+  .global-mode-toggle button.active{background:var(--avl-teal);color:#fff}
+  .global-derive-info{
+    font-size:11px;color:var(--muted);text-align:center;max-width:260px;
+    line-height:1.3;
+  }
+  .global-derive-info b{color:var(--avl-teal-dark)}
+
+  /* ===== Face / smiley ===== */
+  .face{
+    width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:bold;color:#000;cursor:pointer;user-select:none;
+    border:1.2px solid #333;
+  }
+  .face.lg{width:32px;height:32px;font-size:18px}
+  .face.red{background:var(--red)}
+  .face.amber{background:var(--amber)}
+  .face.green{background:var(--green)}
+  .face svg{width:75%;height:75%;display:block}
+
+  /* ===== Main table ===== */
+  table.dash{
+    width:100%;border-collapse:collapse;margin-top:4px;
+    table-layout:fixed;
+  }
+  table.dash th{
+    background:linear-gradient(160deg,#0d47a1,#1565c0);color:#fff;font-weight:600;
+    padding:9px 6px;text-align:center;font-size:13.5px;
+    border:1px solid #fff;
+  }
+  table.dash th.col-item{width:14%}
+  table.dash th.col-comments{width:31%}
+  table.dash th.col-status{width:8%}
+  table.dash th.col-traj{width:14%}
+  table.dash th.col-next{width:25%}
+  table.dash th.col-wt{width:4%}
+  table.dash th.col-act{width:4%}
+  table.dash td{
+    border:1px solid #fff;background:#e8eef6;
+    vertical-align:top;padding:9px 8px;font-size:13px;position:relative;
+  }
+  table.dash tr:nth-child(even) td{background:#f1f5fa}
+  table.dash td.item-cell{font-weight:700;font-size:13.5px;color:var(--text)}
+  table.dash td.center{text-align:center;vertical-align:middle}
+  .editable{
+    min-height:38px;outline:none;border-radius:3px;padding:3px 4px;
+    white-space:pre-wrap;word-break:break-word;
+  }
+  .editable:hover{background:rgba(255,255,255,0.5)}
+  .editable:focus{background:#fff;box-shadow:inset 0 0 0 1.5px var(--avl-teal)}
+  .editable:empty::before{content:attr(data-ph);color:#9AA;font-style:italic}
+
+  .weight-cell{text-align:center;vertical-align:middle}
+  .weight-input{
+    width:48px;border:1px solid var(--border);border-radius:4px;
+    padding:3px 4px;font-size:12px;text-align:center;background:#fff;
+  }
+  .weight-input:focus{outline:none;box-shadow:0 0 0 1.5px var(--avl-teal);border-color:var(--avl-teal)}
+  .weight-hint{font-size:10px;color:var(--muted);margin-top:1px}
+
+  .row-actions{display:flex;flex-direction:column;gap:3px;align-items:center}
+  .icon-btn{
+    background:transparent;border:none;cursor:pointer;font-size:13px;
+    color:var(--muted);padding:2px 4px;border-radius:3px;line-height:1;
+  }
+  .icon-btn:hover{background:#fff;color:var(--red)}
+  .icon-btn.up:hover, .icon-btn.dn:hover{color:var(--avl-teal-dark)}
+
+  /* ===== Footer ===== */
+  .table-footer{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-top:10px;gap:10px;flex-wrap:wrap;
+  }
+  .summary{display:flex;gap:14px;font-size:12.5px;color:var(--muted);align-items:center;flex-wrap:wrap}
+  .summary .pill{
+    background:#fff;border:1px solid #d1deea;border-radius:999px;
+    padding:3px 10px;display:inline-flex;gap:6px;align-items:center;
+  }
+
+  /* ===== Modal / picker ===== */
+  .picker-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.3);
+    display:none;align-items:center;justify-content:center;z-index:100;
+  }
+  .picker-overlay.on{display:flex}
+  .picker{
+    background:#fff;border-radius:10px;padding:18px 22px;min-width:340px;max-width:560px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.2);
+  }
+  .picker h3{margin:0 0 12px;color:var(--avl-blue-dark);font-size:16px}
+  .picker .preview-row{display:flex;justify-content:center;margin:8px 0 12px}
+  .picker .slider-row{margin:14px 4px 6px}
+  .picker .slider-row input[type=range]{width:100%;accent-color:var(--avl-teal)}
+  .picker .slider-value{
+    text-align:center;font-size:13px;color:var(--text);margin:4px 0 10px;
+    font-weight:600;
+  }
+  .picker .slider-value .lbl{color:var(--muted);font-weight:500;margin-left:8px}
+  .picker .quick-row{display:flex;gap:8px;justify-content:center;margin:6px 0 14px;flex-wrap:wrap}
+  .picker .quick-btn{
+    display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;
+    padding:8px 12px;border-radius:6px;border:1.5px solid var(--border);background:#fff;
+    min-width:74px;
+  }
+  .picker .quick-btn:hover{background:#F1F8E9;border-color:var(--avl-teal)}
+  .picker .quick-btn.clear{border-style:dashed}
+  .picker .quick-btn .lbl{font-size:11px;color:var(--muted);font-weight:600}
+  .picker .picker-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+
+  .derive-breakdown{
+    background:#FAFBFC;border:1px solid var(--border);border-radius:6px;
+    padding:10px 12px;margin:8px 0 14px;max-height:300px;overflow:auto;
+    font-size:12px;
+  }
+  .derive-breakdown table{width:100%;border-collapse:collapse}
+  .derive-breakdown th{text-align:left;color:var(--muted);font-weight:600;padding:4px 6px;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase}
+  .derive-breakdown td{padding:5px 6px;border-bottom:1px solid #ECEFF1}
+  .derive-breakdown tr:last-child td{border-bottom:none;font-weight:700;background:#F1F8E9}
+  .derive-breakdown .mini-face{width:14px;height:14px;border-radius:50%;display:inline-block;border:1px solid #333;vertical-align:middle;margin-right:4px}
+
+  /* ===== Toast ===== */
+  #toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:#263238;color:#fff;padding:10px 18px;border-radius:6px;
+    font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,0.25);
+    opacity:0;transition:opacity .25s;pointer-events:none;z-index:200;
+  }
+  #toast.on{opacity:1}
+
+  /* ===== Print / Export ===== */
+  @media print{
+    body{background:#fff;padding:0}
+    .toolbar,.no-print{display:none !important}
+    #dashboard{box-shadow:none;border-radius:0;border-top:5px solid var(--avl-teal)}
+  }
+  .exporting .icon-btn, .exporting .row-actions, .exporting .weight-hint{visibility:hidden}
+
+  /* picker preview is clickable */
+  .picker .traj-widget.lg .pointer-track{cursor:pointer}
+  .picker .traj-widget.lg .face-cell{cursor:pointer}
+  .picker .traj-widget.lg .face-cell:hover{background:#FAFBFC;border-radius:4px}
+
+  /* auto mode visual: triangle non-interactive, body greyed slightly */
+  .traj-widget.auto-mode{background:#FAFBFC}
+  .traj-widget.auto-mode .pointer-track{cursor:not-allowed}
+  @media (max-width:980px){
+    .home-hero{grid-template-columns:1fr}
+  }
+  @media (max-width:760px){
+    body{padding:10px}
+    #dashboard{padding:14px}
+    .head{padding:10px}
+    .head .title h1{font-size:24px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================= TOOLBAR ROW 1 ======================= -->
+<div class="toolbar no-print">
+  <div class="group">
+    <button class="btn ghost" id="btnNew" title="Start a fresh dashboard">📄 New</button>
+    <button class="btn" id="btnLoad" title="Open JSON file">📂 Load</button>
+    <button class="btn" id="btnSave" title="Save to JSON file (Ctrl+S)">💾 Save</button>
+    <button class="btn" id="btnSaveAs" title="Save as new JSON file">💾 Save As…</button>
+  </div>
+  <div class="sep"></div>
+  <div class="group">
+    <button class="btn alt" id="btnExcelExport" title="Export all weeks to Excel">📊 Excel ↓</button>
+    <button class="btn alt" id="btnExcelImport" title="Import from Excel">📊 Excel ↑</button>
+  </div>
+  <div class="sep"></div>
+  <div class="group">
+    <button class="btn alt" id="btnExportPng">🖼️ PNG</button>
+    <button class="btn alt" id="btnPrint">🖨️ Print/PDF</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="group">
+    <label>Author</label>
+    <input type="text" id="authorInput" placeholder="Your name" size="16">
+  </div>
+</div>
+
+<!-- ======================= TOOLBAR ROW 2 ======================= -->
+<div class="toolbar row2 no-print">
+  <div class="group">
+    <label>Week</label>
+    <select id="weekSelect"></select>
+    <button class="btn sm ghost" id="btnNewWeek" title="Create a new weekly snapshot, carrying over items">＋ Week</button>
+    <button class="btn sm ghost" id="btnDuplicateWeek" title="Duplicate current week (copies comments too)">⎘ Duplicate</button>
+    <button class="btn sm ghost danger" id="btnDeleteWeek" title="Delete current weekly snapshot">🗑 Delete week</button>
+  </div>
+  <div class="sep"></div>
+  <div class="group">
+    <button class="btn sm ghost" id="btnAddRow">＋ Add item</button>
+    <button class="btn sm ghost" id="btnResetRows" title="Restore default item set">↺ Default items</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="group">
+    <label>Active week</label>
+    <input type="week" id="weekInput" title="Change the active week ID">
+  </div>
+</div>
+
+<!-- ======================= DASHBOARD ======================= -->
+<div id="dashboard">
+  <div class="home-hero no-print">
+    <div class="hero-card">
+      <div class="hero-overline">AVL Portfolio</div>
+      <div class="hero-title">Weekly Program Command Center</div>
+      <div class="hero-sub">Track execution momentum, identify risk early, and align immediate next actions.</div>
+      <div class="hero-chips">
+        <span class="hero-chip" id="heroWeek">Week: —</span>
+        <span class="hero-chip" id="heroMode">Mode: Auto</span>
+        <span class="hero-chip" id="heroRows">Items: 0</span>
+      </div>
+    </div>
+    <div class="meta-card">
+      <div class="meta-block"><span class="meta-k">Owner</span><span class="meta-v" id="heroAuthor">Not set</span></div>
+      <div class="meta-divider"></div>
+      <div class="meta-block"><span class="meta-k">Dashboard</span><span class="meta-v">Operational View</span></div>
+      <div class="meta-divider"></div>
+      <div class="meta-block"><span class="meta-k">Cadence</span><span class="meta-v">Weekly Review</span></div>
+    </div>
+  </div>
+
+  <div class="head">
+    <div class="title">
+      <h1><span contenteditable="true" id="dashTitle">Weekly Dashboard</span><span class="week-pill no-print" id="weekPill">—</span></h1>
+      <div class="sub" contenteditable="true" id="dashSub">Macro project indicators</div>
+      <div class="underline"></div>
+    </div>
+    <div class="global-status">
+      <div class="label">Global Project Status</div>
+      <div class="traj-widget" id="globalTraj" data-pos="2" title="Click to change (Manual mode)">
+        <div class="traj-label">Trajectory</div>
+        <div class="traj-body">
+          <div class="traj-faces">
+            <div class="face-cell"><span class="face red"></span></div>
+            <div class="face-cell"><span class="face amber"></span></div>
+            <div class="face-cell"><span class="face green"></span></div>
+          </div>
+          <div class="pointer-track"><div class="pointer"></div></div>
+        </div>
+      </div>
+      <div class="global-mode-toggle no-print" id="modeToggle">
+        <button data-mode="auto" class="active">Auto (weighted)</button>
+        <button data-mode="manual">Manual</button>
+      </div>
+      <div class="global-derive-info no-print" id="deriveInfo">—</div>
+    </div>
+  </div>
+
+  <table class="dash">
+    <colgroup><col><col><col><col><col><col><col></colgroup>
+    <thead>
+      <tr>
+        <th class="col-item">Item</th>
+        <th class="col-wt no-print" title="Weight used for auto-derived Global Status">W</th>
+        <th class="col-comments">Comments</th>
+        <th class="col-status">Today's<br>status</th>
+        <th class="col-traj">Trajectory until<br>Milestone</th>
+        <th class="col-next">Next Step</th>
+        <th class="col-act no-print"></th>
+      </tr>
+    </thead>
+    <tbody id="rowsBody"></tbody>
+  </table>
+
+  <div class="table-footer no-print">
+    <div class="summary" id="summary"></div>
+    <div style="color:var(--muted);font-size:11.5px">Click cells / smileys to edit · weights drive auto-derived global status</div>
+  </div>
+</div>
+
+<!-- ======================= TRAJECTORY PICKER MODAL ======================= -->
+<div class="picker-overlay" id="trajPicker">
+  <div class="picker">
+    <h3 id="pickerTitle">Set trajectory</h3>
+    <div class="preview-row">
+      <div class="traj-widget lg" id="pickerPreview">
+        <div class="traj-label">Trajectory</div>
+        <div class="traj-body">
+          <div class="traj-faces">
+            <div class="face-cell"><span class="face red"></span></div>
+            <div class="face-cell"><span class="face amber"></span></div>
+            <div class="face-cell"><span class="face green"></span></div>
+          </div>
+          <div class="pointer-track"><div class="pointer"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="slider-row">
+      <input type="range" id="pickerSlider" min="0" max="2" step="0.05" value="1">
+    </div>
+    <div class="slider-value">
+      <span id="pickerVal">1.00</span><span class="lbl" id="pickerLbl">At risk</span>
+    </div>
+    <div class="quick-row">
+      <button class="quick-btn" data-pos="0"><div class="face red lg"></div><div class="lbl">Off track</div></button>
+      <button class="quick-btn" data-pos="0.5"><div class="lbl" style="height:32px;display:flex;align-items:center">●─●</div><div class="lbl">0.5</div></button>
+      <button class="quick-btn" data-pos="1"><div class="face amber lg"></div><div class="lbl">At risk</div></button>
+      <button class="quick-btn" data-pos="1.5"><div class="lbl" style="height:32px;display:flex;align-items:center">●─●</div><div class="lbl">1.5</div></button>
+      <button class="quick-btn" data-pos="2"><div class="face green lg"></div><div class="lbl">On track</div></button>
+      <button class="quick-btn clear" data-pos="-1"><div class="face" style="background:#ECEFF1;border-style:dashed">—</div><div class="lbl">Clear</div></button>
+    </div>
+    <div class="picker-actions">
+      <button class="btn ghost" id="pickerCancel">Cancel</button>
+      <button class="btn" id="pickerOk">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= DERIVE INFO MODAL ======================= -->
+<div class="picker-overlay" id="deriveModal">
+  <div class="picker" style="min-width:420px">
+    <h3>Global Status — weighted breakdown</h3>
+    <div id="deriveBreakdown" class="derive-breakdown"></div>
+    <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px">
+      <b>Formula:</b> weighted average position = Σ(weight × position) / Σ(weight), where Off track=0, At risk=1, On track=2.<br>
+      The triangle is placed at this continuous value (e.g. 1.42 sits between At risk and On track).<br>
+      Text bands: &lt; 0.67 → Off · 0.67–1.33 → At risk · ≥ 1.34 → On track. Rows with no trajectory or weight 0 are excluded.
+    </div>
+    <div class="picker-actions">
+      <button class="btn ghost" id="deriveClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept=".json,application/json" style="display:none">
+<input type="file" id="xlsxInput" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none">
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   AVL Weekly Dashboard v2
+   - Multi-week history (snapshots[])
+   - Per-row weights, auto-derived global trajectory
+   - JSON save/load + Excel import/export + PNG export
+============================================================ */
+
+const SMILEY_SVG = {
+  red:  '<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="10" r="1.2" fill="#000"/><circle cx="15" cy="10" r="1.2" fill="#000"/><path d="M8 16 Q12 13 16 16"/></svg>',
+  amber:'<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="10" r="1.2" fill="#000"/><circle cx="15" cy="10" r="1.2" fill="#000"/><line x1="8" y1="15" x2="16" y2="15"/></svg>',
+  green:'<svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="10" r="1.2" fill="#000"/><circle cx="15" cy="10" r="1.2" fill="#000"/><path d="M8 14 Q12 17 16 14"/></svg>'
+};
+const POS_COLOR = ['red','amber','green'];
+const POS_TEXT = ['Off track','At risk','On track'];
+
+const DEFAULT_ITEMS = [
+  'Item 1',
+  'Item 2',
+  'Item 3'
+];
+
+let state = null;
+let currentFileHandle = null;
+let pickerTarget = null;
+
+/* ===== Utilities ===== */
+const uid = () => 'r'+Math.random().toString(36).slice(2,9);
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('on');
+  clearTimeout(toast._t);
+  toast._t=setTimeout(()=>t.classList.remove('on'),2200);
+}
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function currentISOWeek(d){
+  d = d ? new Date(d) : new Date();
+  const u=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=(u.getUTCDay()+6)%7;
+  u.setUTCDate(u.getUTCDate()-day+3);
+  const fy=new Date(Date.UTC(u.getUTCFullYear(),0,4));
+  const w=1+Math.round(((u-fy)/86400000-3+((fy.getUTCDay()+6)%7))/7);
+  return u.getUTCFullYear()+'-W'+String(w).padStart(2,'0');
+}
+function nextWeekId(weekId){
+  if(!weekId) return currentISOWeek();
+  const m = weekId.match(/^(\d{4})-W(\d{1,2})$/); if(!m) return currentISOWeek();
+  let y=+m[1], w=+m[2]+1;
+  // ISO: most years have 52 weeks, some 53 — naive +1 with year rollover at 53
+  if(w>53){ w=1; y++; }
+  return y+'-W'+String(w).padStart(2,'0');
+}
+
+/* ===== State factories ===== */
+function newRow(name){
+  return { id: uid(), item:name, weight:1, comments:'', status:-1, traj:-1, next:'' };
+}
+function newSnapshot(week){
+  return {
+    week: week || currentISOWeek(),
+    savedAt: new Date().toISOString(),
+    globalTrajMode: 'auto',
+    globalTrajManual: 1,
+    rows: DEFAULT_ITEMS.map(newRow)
+  };
+}
+function freshState(){
+  const w = currentISOWeek();
+  return {
+    _type:'AVL_WeeklyDashboard', _version:3,
+    meta: { title:'Weekly Dashboard', subtitle:'Macro project indicators', author: '' },
+    activeWeek: w,
+    snapshots: [ newSnapshot(w) ]
+  };
+}
+function getActiveSnapshot(){
+  return state.snapshots.find(s => s.week === state.activeWeek) || state.snapshots[0];
+}
+
+/* ===== Derive global trajectory ===== */
+function deriveGlobal(snap){
+  const contributing = snap.rows.filter(r => r.traj >= 0 && r.traj <= 2 && (+r.weight||0) > 0);
+  if(!contributing.length) return { val:-1, avg:null, totalWeight:0, contributing:[] };
+  let num=0, den=0;
+  contributing.forEach(r => { num += (+r.weight)*(+r.traj); den += (+r.weight); });
+  const avg = num/den;
+  return { val: avg, avg, totalWeight:den, contributing };
+}
+function effectiveGlobalPos(snap){
+  if(snap.globalTrajMode === 'manual') return snap.globalTrajManual;
+  return deriveGlobal(snap).val;
+}
+
+/* ===== Render helpers ===== */
+function trajPositionPct(val){
+  // value 0 → 16.67%, 1 → 50%, 2 → 83.33% (face centers in 3-cell flex)
+  return (16.6667 + val * 33.3333);
+}
+function trajBucket(val){
+  // map a continuous 0-2 to nearest discrete bucket
+  if(val < 0.67) return 0;
+  if(val < 1.34) return 1;
+  return 2;
+}
+function trajLabel(val){
+  if(val === -1 || val == null) return '(not set)';
+  const b = trajBucket(val);
+  // mid-region descriptive label
+  if(val >= 0.4 && val <= 0.6) return 'Off → At risk';
+  if(val >= 0.9 && val <= 1.1) return 'At risk';
+  if(val >= 1.4 && val <= 1.6) return 'At risk → On track';
+  return POS_TEXT[b];
+}
+function trajWidgetHTML(val, compact){
+  const hasVal = val !== -1 && val != null;
+  const pct = hasVal ? trajPositionPct(val) : 50;
+  return `
+    <div class="traj-widget ${compact?'compact':''}" data-val="${val}">
+      <div class="traj-label">Trajectory</div>
+      <div class="traj-body">
+        <div class="traj-faces">
+          <div class="face-cell"><span class="face red">${SMILEY_SVG.red}</span></div>
+          <div class="face-cell"><span class="face amber">${SMILEY_SVG.amber}</span></div>
+          <div class="face-cell"><span class="face green">${SMILEY_SVG.green}</span></div>
+        </div>
+        <div class="pointer-track"><div class="pointer ${hasVal?'':'hidden'}" style="left:${pct}%"></div></div>
+      </div>
+    </div>`;
+}
+function statusFaceHTML(pos){
+  if(pos===-1 || pos==null){
+    return `<div class="face lg" style="background:#ECEFF1;border-style:dashed">—</div>`;
+  }
+  const color = POS_COLOR[pos];
+  return `<div class="face lg ${color}">${SMILEY_SVG[color]}</div>`;
+}
+
+function render(){
+  document.getElementById('dashTitle').textContent = state.meta.title;
+  document.getElementById('dashSub').textContent = state.meta.subtitle;
+  document.getElementById('authorInput').value = state.meta.author;
+  document.getElementById('weekInput').value = state.activeWeek;
+  document.getElementById('weekPill').textContent = state.activeWeek;
+
+  // Week selector
+  const sel = document.getElementById('weekSelect');
+  sel.innerHTML = state.snapshots
+    .slice().sort((a,b)=>a.week.localeCompare(b.week))
+    .map(s => `<option value="${s.week}"${s.week===state.activeWeek?' selected':''}>${s.week}</option>`)
+    .join('');
+
+  const snap = getActiveSnapshot();
+  document.getElementById('heroWeek').textContent = 'Week: ' + state.activeWeek;
+  document.getElementById('heroMode').textContent = 'Mode: ' + (snap.globalTrajMode === 'auto' ? 'Auto' : 'Manual');
+  document.getElementById('heroRows').textContent = 'Items: ' + snap.rows.length;
+  document.getElementById('heroAuthor').textContent = state.meta.author?.trim() ? state.meta.author : 'Not set';
+
+  // Global widget
+  const derived = deriveGlobal(snap);
+  const effVal = effectiveGlobalPos(snap);
+  const g = document.getElementById('globalTraj');
+  g.dataset.val = effVal;
+  g.classList.toggle('auto-mode', snap.globalTrajMode === 'auto');
+  // Fill smileys
+  [...g.querySelectorAll('.traj-faces .face')].forEach((el,i)=> el.innerHTML = SMILEY_SVG[POS_COLOR[i]]);
+  // Position triangle
+  const gPointer = g.querySelector('.pointer');
+  if(effVal === -1 || effVal == null){
+    gPointer.classList.add('hidden');
+  } else {
+    gPointer.classList.remove('hidden');
+    gPointer.style.left = trajPositionPct(effVal) + '%';
+  }
+
+  // Mode toggle buttons
+  document.querySelectorAll('#modeToggle button').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.mode === snap.globalTrajMode);
+  });
+  // Derive info
+  const di = document.getElementById('deriveInfo');
+  if(snap.globalTrajMode === 'auto'){
+    if(derived.val === -1){
+      di.innerHTML = `No trajectories set yet — set row trajectories to derive global.`;
+    } else {
+      di.innerHTML = `Weighted avg = <b>${derived.val.toFixed(2)}</b> (${trajLabel(derived.val)}) · ${derived.contributing.length}/${snap.rows.length} rows · Σw=${derived.totalWeight} · <a href="#" id="showBreakdown" style="color:var(--avl-teal-dark)">show breakdown</a>`;
+    }
+  } else {
+    di.innerHTML = `Manual: <b>${(+effVal).toFixed(2)}</b> (${trajLabel(effVal)}) — click the global widget to change.`;
+  }
+
+  // Rows
+  const tbody = document.getElementById('rowsBody');
+  tbody.innerHTML = '';
+  snap.rows.forEach((r) => {
+    const tr = document.createElement('tr');
+    tr.dataset.id = r.id;
+    tr.innerHTML = `
+      <td class="item-cell">
+        <div class="editable" data-field="item" data-ph="Item name…" contenteditable="true">${escapeHtml(r.item)}</div>
+      </td>
+      <td class="weight-cell no-print" title="Weight for auto-derived global status">
+        <input type="number" class="weight-input" min="0" step="0.5" value="${r.weight}" data-field="weight">
+        <div class="weight-hint">w</div>
+      </td>
+      <td>
+        <div class="editable" data-field="comments" data-ph="Comments / status notes…" contenteditable="true">${escapeHtml(r.comments)}</div>
+      </td>
+      <td class="center" data-action="status" title="Click to change today's status">
+        ${statusFaceHTML(r.status)}
+      </td>
+      <td class="center" data-action="traj" title="Click to change trajectory">
+        ${trajWidgetHTML(r.traj, true)}
+        ${r.traj===-1?'<div style="font-size:10px;color:var(--muted);margin-top:2px">(not set)</div>':'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(+r.traj).toFixed(2)+'</div>'}
+      </td>
+      <td>
+        <div class="editable" data-field="next" data-ph="Next step / action…" contenteditable="true">${escapeHtml(r.next)}</div>
+      </td>
+      <td class="center no-print">
+        <div class="row-actions">
+          <button class="icon-btn up" data-act="up" title="Move up">▲</button>
+          <button class="icon-btn dn" data-act="dn" title="Move down">▼</button>
+          <button class="icon-btn" data-act="del" title="Delete row">✕</button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  renderSummary(snap);
+}
+
+function renderSummary(snap){
+  const total = snap.rows.length;
+  const g = snap.rows.filter(r=>r.status===2).length;
+  const a = snap.rows.filter(r=>r.status===1).length;
+  const r = snap.rows.filter(r=>r.status===0).length;
+  const totW = snap.rows.reduce((s,x)=>s+(+x.weight||0),0);
+  document.getElementById('summary').innerHTML = `
+    <span class="pill"><span class="face green" style="width:14px;height:14px"></span> ${g} on track</span>
+    <span class="pill"><span class="face amber" style="width:14px;height:14px"></span> ${a} at risk</span>
+    <span class="pill"><span class="face red" style="width:14px;height:14px"></span> ${r} off track</span>
+    <span style="color:var(--muted)">· ${total} items · Σweights=${totW}</span>
+  `;
+}
+
+/* ===== Row interactions ===== */
+document.getElementById('rowsBody').addEventListener('click', e=>{
+  const tr = e.target.closest('tr'); if(!tr) return;
+  const snap = getActiveSnapshot();
+  const row = snap.rows.find(r=>r.id===tr.dataset.id); if(!row) return;
+
+  const actBtn = e.target.closest('.icon-btn');
+  if(actBtn){
+    const act = actBtn.dataset.act;
+    const i = snap.rows.findIndex(r=>r.id===row.id);
+    if(act==='up' && i>0){ [snap.rows[i-1],snap.rows[i]] = [snap.rows[i],snap.rows[i-1]]; render(); }
+    else if(act==='dn' && i<snap.rows.length-1){ [snap.rows[i+1],snap.rows[i]] = [snap.rows[i],snap.rows[i+1]]; render(); }
+    else if(act==='del'){
+      if(confirm(`Delete "${row.item}"?`)){ snap.rows = snap.rows.filter(r=>r.id!==row.id); render(); }
+    }
+    return;
+  }
+
+  if(e.target.closest('td[data-action="status"]')){
+    if(row.status===-1) row.status=0;
+    else row.status = (row.status+1)%3;
+    render(); return;
+  }
+
+  if(e.target.closest('td[data-action="traj"]')){
+    openTrajPicker({kind:'row', rowId:row.id});
+    return;
+  }
+});
+
+document.getElementById('rowsBody').addEventListener('input', e=>{
+  const tr = e.target.closest('tr'); if(!tr) return;
+  const snap = getActiveSnapshot();
+  const row = snap.rows.find(r=>r.id===tr.dataset.id); if(!row) return;
+
+  const wi = e.target.closest('.weight-input');
+  if(wi){
+    const v = parseFloat(wi.value);
+    row.weight = isNaN(v) || v<0 ? 0 : v;
+    // Re-render only the derive info & global widget (avoid losing input focus)
+    const derived = deriveGlobal(snap);
+    const eff = effectiveGlobalPos(snap);
+    const g = document.getElementById('globalTraj');
+    g.dataset.val = eff;
+    const gP = g.querySelector('.pointer');
+    if(eff === -1 || eff == null){ gP.classList.add('hidden'); }
+    else { gP.classList.remove('hidden'); gP.style.left = trajPositionPct(eff) + '%'; }
+    const di = document.getElementById('deriveInfo');
+    if(snap.globalTrajMode === 'auto'){
+      if(derived.val === -1) di.innerHTML = `No trajectories set yet — set row trajectories to derive global.`;
+      else di.innerHTML = `Weighted avg = <b>${derived.val.toFixed(2)}</b> (${trajLabel(derived.val)}) · ${derived.contributing.length}/${snap.rows.length} rows · Σw=${derived.totalWeight} · <a href="#" id="showBreakdown" style="color:var(--avl-teal-dark)">show breakdown</a>`;
+    }
+    renderSummary(snap);
+    return;
+  }
+
+  const ed = e.target.closest('.editable'); if(!ed) return;
+  const f = ed.dataset.field;
+  if(f==='item') row.item = ed.textContent;
+  else if(f==='comments') row.comments = ed.textContent;
+  else if(f==='next') row.next = ed.textContent;
+});
+
+/* ===== Header edits ===== */
+document.getElementById('dashTitle').addEventListener('input', e=> state.meta.title = e.target.textContent);
+document.getElementById('dashSub').addEventListener('input', e=> state.meta.subtitle = e.target.textContent);
+document.getElementById('authorInput').addEventListener('input', e=> state.meta.author = e.target.value);
+document.getElementById('weekInput').addEventListener('change', e=>{
+  const newW = e.target.value; if(!newW) return;
+  const snap = getActiveSnapshot();
+  // If another snapshot already has this week, switch to it; else rename current
+  if(state.snapshots.some(s=> s!==snap && s.week === newW)){
+    state.activeWeek = newW; render();
+  } else {
+    snap.week = newW;
+    state.activeWeek = newW;
+    render();
+  }
+});
+
+/* ===== Global widget click → manual mode picker ===== */
+document.getElementById('globalTraj').addEventListener('click', ()=>{
+  const snap = getActiveSnapshot();
+  if(snap.globalTrajMode === 'auto'){
+    toast('Switch to Manual mode to override the global status');
+    return;
+  }
+  openTrajPicker({kind:'global'});
+});
+
+/* ===== Mode toggle ===== */
+document.getElementById('modeToggle').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  const snap = getActiveSnapshot();
+  snap.globalTrajMode = b.dataset.mode;
+  // When switching to manual, seed with current effective value
+  if(snap.globalTrajMode === 'manual'){
+    const eff = effectiveGlobalPos(snap);
+    if(eff !== -1 && eff != null) snap.globalTrajManual = eff;
+  }
+  render();
+});
+
+/* ===== Derive breakdown modal ===== */
+document.getElementById('deriveInfo').addEventListener('click', e=>{
+  if(e.target.id !== 'showBreakdown') return;
+  e.preventDefault();
+  const snap = getActiveSnapshot();
+  const d = deriveGlobal(snap);
+  const rows = snap.rows.map(r=>{
+    const contributes = r.traj>=0 && (+r.weight||0)>0;
+    const contrib = contributes ? (+r.weight * +r.traj) : 0;
+    const bucket = r.traj>=0 ? trajBucket(r.traj) : -1;
+    return `<tr>
+      <td>${escapeHtml(r.item)}</td>
+      <td style="text-align:center">${r.weight}</td>
+      <td style="text-align:center">${r.traj>=0 ? `<span class="mini-face" style="background:var(--${POS_COLOR[bucket]})"></span>${(+r.traj).toFixed(2)} (${trajLabel(r.traj)})` : '<span style="color:var(--muted)">—</span>'}</td>
+      <td style="text-align:right">${contributes ? contrib.toFixed(2) : '<span style="color:var(--muted)">excluded</span>'}</td>
+    </tr>`;
+  }).join('');
+  const totalContrib = d.contributing.reduce((s,r)=> s+(+r.weight)*(+r.traj), 0);
+  const summaryRow = d.val === -1
+    ? `<tr><td colspan="4" style="text-align:center;color:var(--muted)">No contributing rows — global cannot be derived.</td></tr>`
+    : `<tr>
+        <td>Weighted average</td>
+        <td style="text-align:center">Σw=${d.totalWeight}</td>
+        <td style="text-align:center"><span class="mini-face" style="background:var(--${POS_COLOR[trajBucket(d.val)]})"></span>${trajLabel(d.val)}</td>
+        <td style="text-align:right">${totalContrib.toFixed(2)} / ${d.totalWeight} = <b>${d.val.toFixed(2)}</b></td>
+      </tr>`;
+  document.getElementById('deriveBreakdown').innerHTML = `
+    <table>
+      <thead><tr><th>Item</th><th>Weight</th><th>Trajectory</th><th>w × pos</th></tr></thead>
+      <tbody>${rows}${summaryRow}</tbody>
+    </table>`;
+  document.getElementById('deriveModal').classList.add('on');
+});
+document.getElementById('deriveClose').addEventListener('click', ()=> document.getElementById('deriveModal').classList.remove('on'));
+document.getElementById('deriveModal').addEventListener('click', e=>{
+  if(e.target.id==='deriveModal') document.getElementById('deriveModal').classList.remove('on');
+});
+
+/* ===== Trajectory picker ===== */
+let pickerValue = 1; // tentative value while picker is open
+let pickerCleared = false;
+
+function updatePickerPreview(){
+  const preview = document.getElementById('pickerPreview');
+  const ptr = preview.querySelector('.pointer');
+  if(pickerCleared){
+    ptr.classList.add('hidden');
+    document.getElementById('pickerVal').textContent = '—';
+    document.getElementById('pickerLbl').textContent = '(not set)';
+  } else {
+    ptr.classList.remove('hidden');
+    ptr.style.left = trajPositionPct(pickerValue) + '%';
+    document.getElementById('pickerVal').textContent = pickerValue.toFixed(2);
+    document.getElementById('pickerLbl').textContent = trajLabel(pickerValue);
+  }
+  // sync slider
+  const sl = document.getElementById('pickerSlider');
+  if(!pickerCleared) sl.value = pickerValue;
+}
+
+function openTrajPicker(target){
+  pickerTarget = target;
+  const snap = getActiveSnapshot();
+  let initial;
+  if(target.kind === 'global'){
+    initial = snap.globalTrajManual;
+    document.getElementById('pickerTitle').textContent = 'Set Global Project Status (manual)';
+  } else {
+    const row = snap.rows.find(r=>r.id===target.rowId);
+    initial = row ? row.traj : 1;
+    document.getElementById('pickerTitle').textContent = 'Set item trajectory';
+  }
+  pickerCleared = (initial === -1 || initial == null);
+  pickerValue = pickerCleared ? 1 : Math.max(0, Math.min(2, +initial));
+  // Fill preview smileys
+  document.querySelectorAll('#pickerPreview .traj-faces .face').forEach((el,i)=> el.innerHTML = SMILEY_SVG[POS_COLOR[i]]);
+  // Fill quick-btn smileys
+  document.querySelectorAll('.quick-btn .face').forEach(el=>{
+    if(el.classList.contains('red')) el.innerHTML = SMILEY_SVG.red;
+    else if(el.classList.contains('amber')) el.innerHTML = SMILEY_SVG.amber;
+    else if(el.classList.contains('green')) el.innerHTML = SMILEY_SVG.green;
+  });
+  updatePickerPreview();
+  document.getElementById('trajPicker').classList.add('on');
+}
+function closeTrajPicker(){
+  document.getElementById('trajPicker').classList.remove('on');
+  pickerTarget = null;
+}
+function commitPicker(){
+  if(!pickerTarget){ closeTrajPicker(); return; }
+  const snap = getActiveSnapshot();
+  const v = pickerCleared ? -1 : pickerValue;
+  if(pickerTarget.kind === 'global'){
+    // For global, "Clear" snaps to 1.0 (no -1 for global manual)
+    snap.globalTrajManual = pickerCleared ? 1 : pickerValue;
+  } else {
+    const row = snap.rows.find(r=>r.id===pickerTarget.rowId);
+    if(row) row.traj = v;
+  }
+  closeTrajPicker();
+  render();
+}
+
+document.getElementById('pickerCancel').addEventListener('click', closeTrajPicker);
+document.getElementById('pickerOk').addEventListener('click', commitPicker);
+document.getElementById('trajPicker').addEventListener('click', e=>{
+  if(e.target.id === 'trajPicker') closeTrajPicker();
+});
+
+// Slider input
+document.getElementById('pickerSlider').addEventListener('input', e=>{
+  pickerCleared = false;
+  pickerValue = parseFloat(e.target.value);
+  updatePickerPreview();
+});
+
+// Quick buttons
+document.querySelector('#trajPicker .quick-row').addEventListener('click', e=>{
+  const b = e.target.closest('.quick-btn'); if(!b) return;
+  const pos = parseFloat(b.dataset.pos);
+  if(pos === -1){
+    pickerCleared = true;
+  } else {
+    pickerCleared = false;
+    pickerValue = pos;
+  }
+  updatePickerPreview();
+});
+
+// Click anywhere on the picker preview track to set value
+document.querySelector('#pickerPreview .pointer-track').addEventListener('click', e=>{
+  const track = e.currentTarget;
+  const rect = track.getBoundingClientRect();
+  const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+  // Inverse of trajPositionPct: val = (xPct - 16.67) / 33.33, clamp 0..2
+  let v = (xPct - 16.6667) / 33.3333;
+  v = Math.max(0, Math.min(2, v));
+  pickerCleared = false;
+  pickerValue = v;
+  updatePickerPreview();
+});
+// Same for clicking on the faces row of the preview
+document.querySelector('#pickerPreview .traj-faces').addEventListener('click', e=>{
+  const cell = e.target.closest('.face-cell'); if(!cell) return;
+  const cells = [...cell.parentElement.children];
+  const idx = cells.indexOf(cell);
+  pickerCleared = false;
+  pickerValue = idx;
+  updatePickerPreview();
+});
+
+/* ===== Toolbar: new / add row / reset / week management ===== */
+document.getElementById('btnAddRow').addEventListener('click', ()=>{
+  getActiveSnapshot().rows.push(newRow('New item'));
+  render();
+});
+document.getElementById('btnResetRows').addEventListener('click', ()=>{
+  const snap = getActiveSnapshot();
+  if(snap.rows.length && !confirm('Replace current items with the default set? Comments and statuses on current rows will be lost.')) return;
+  snap.rows = DEFAULT_ITEMS.map(newRow);
+  render();
+});
+document.getElementById('btnNew').addEventListener('click', ()=>{
+  if(!confirm('Start a new blank dashboard? Unsaved changes will be lost.')) return;
+  currentFileHandle = null;
+  state = freshState();
+  render();
+  toast('New dashboard created');
+});
+document.getElementById('weekSelect').addEventListener('change', e=>{
+  state.activeWeek = e.target.value; render();
+});
+document.getElementById('btnNewWeek').addEventListener('click', ()=>{
+  const cur = getActiveSnapshot();
+  const proposed = nextWeekId(cur.week);
+  const wk = prompt('New week ID (YYYY-Www):', proposed);
+  if(!wk) return;
+  if(!/^\d{4}-W\d{2}$/.test(wk)){ alert('Invalid format. Use YYYY-Www, e.g. 2026-W21'); return; }
+  if(state.snapshots.some(s=>s.week===wk)){ alert('That week already exists.'); return; }
+  // Carry over items + weights, reset comments/status/traj/next
+  const fresh = {
+    week: wk, savedAt: new Date().toISOString(),
+    globalTrajMode: cur.globalTrajMode, globalTrajManual: cur.globalTrajManual,
+    rows: cur.rows.map(r => ({ id: uid(), item:r.item, weight:r.weight, comments:'', status:-1, traj:-1, next:'' }))
+  };
+  state.snapshots.push(fresh);
+  state.activeWeek = wk;
+  render();
+  toast('Created snapshot for '+wk);
+});
+document.getElementById('btnDuplicateWeek').addEventListener('click', ()=>{
+  const cur = getActiveSnapshot();
+  const proposed = nextWeekId(cur.week);
+  const wk = prompt('Duplicate current week into (YYYY-Www):', proposed);
+  if(!wk) return;
+  if(!/^\d{4}-W\d{2}$/.test(wk)){ alert('Invalid format.'); return; }
+  if(state.snapshots.some(s=>s.week===wk)){ alert('That week already exists.'); return; }
+  const dup = JSON.parse(JSON.stringify(cur));
+  dup.week = wk; dup.savedAt = new Date().toISOString();
+  dup.rows.forEach(r => r.id = uid());
+  state.snapshots.push(dup);
+  state.activeWeek = wk;
+  render();
+  toast('Duplicated into '+wk);
+});
+document.getElementById('btnDeleteWeek').addEventListener('click', ()=>{
+  if(state.snapshots.length<=1){ alert('Cannot delete the only weekly snapshot.'); return; }
+  const cur = getActiveSnapshot();
+  if(!confirm(`Delete weekly snapshot ${cur.week}? This cannot be undone.`)) return;
+  state.snapshots = state.snapshots.filter(s=>s!==cur);
+  state.activeWeek = state.snapshots[state.snapshots.length-1].week;
+  render();
+  toast('Deleted '+cur.week);
+});
+
+/* ===== Save / Load (FSA + fallback) ===== */
+const FSA = 'showSaveFilePicker' in window;
+
+function serialize(){
+  return {
+    _type:'AVL_WeeklyDashboard', _version:3,
+    savedAt: new Date().toISOString(),
+    meta: state.meta,
+    activeWeek: state.activeWeek,
+    snapshots: state.snapshots
+  };
+}
+function migrateV1(obj){
+  // v1 had top-level title/subtitle/week/globalTraj/rows
+  if((obj._version === 2 || obj._version === 3) && Array.isArray(obj.snapshots)) return obj;
+  const wk = obj.week || currentISOWeek();
+  return {
+    _type:'AVL_WeeklyDashboard', _version:2,
+    meta:{ title: obj.title||'Weekly Dashboard', subtitle: obj.subtitle||'Macro project indicators', author: obj.author||'' },
+    activeWeek: wk,
+    snapshots: [{
+      week: wk, savedAt: obj.savedAt || new Date().toISOString(),
+      globalTrajMode: 'manual',
+      globalTrajManual: typeof obj.globalTraj === 'number' ? obj.globalTraj : 1,
+      rows: Array.isArray(obj.rows) ? obj.rows.map(r=>({
+        id: r.id||uid(), item:r.item||'', weight: typeof r.weight==='number'?r.weight:1,
+        comments: r.comments||'', status: typeof r.status==='number'?r.status:-1,
+        traj: typeof r.traj==='number'?r.traj:-1, next: r.next||''
+      })) : DEFAULT_ITEMS.map(newRow)
+    }]
+  };
+}
+function applyLoaded(obj){
+  if(!obj || typeof obj !== 'object') throw new Error('Not a valid file');
+  const migrated = migrateV1(obj);
+  // Ensure each snapshot has proper structure
+  migrated.snapshots = migrated.snapshots.map(s=>({
+    week: s.week || currentISOWeek(),
+    savedAt: s.savedAt || new Date().toISOString(),
+    globalTrajMode: s.globalTrajMode === 'manual' ? 'manual' : 'auto',
+    globalTrajManual: typeof s.globalTrajManual === 'number' ? s.globalTrajManual : 1,
+    rows: (Array.isArray(s.rows)?s.rows:[]).map(r=>({
+      id: r.id||uid(), item:r.item||'',
+      weight: typeof r.weight==='number'?r.weight:1,
+      comments: r.comments||'',
+      status: typeof r.status==='number'?r.status:-1,
+      traj: typeof r.traj==='number'?r.traj:-1,
+      next: r.next||''
+    }))
+  }));
+  if(!migrated.snapshots.some(s=>s.week===migrated.activeWeek)){
+    migrated.activeWeek = migrated.snapshots[0].week;
+  }
+  state = migrated;
+  render();
+}
+function suggestedFilename(ext){
+  const safe = (state.meta.title||'Dashboard').replace(/[^\w\-]+/g,'_').slice(0,40);
+  return `${safe}_${state.activeWeek}.${ext}`;
+}
+function downloadBlob(content, name, mime){
+  const blob = new Blob([content],{type:mime});
+  const url = URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+async function saveAs(){
+  const payload = JSON.stringify(serialize(), null, 2);
+  window.parent.postMessage({ type: 'SAVE', payload: payload }, '*');
+  toast('Saved changes');
+}
+async function saveCurrent(){
+  saveAs();
+}
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'LOAD') {
+    try {
+      if(!event.data.payload) return;
+      const payload = typeof event.data.payload === 'string' ? JSON.parse(event.data.payload) : event.data.payload;
+      applyLoaded(payload);
+    } catch(err) { console.error('Error loading:', err); }
+  }
+});
+async function loadFile(){
+  if(FSA){
+    try{
+      const [handle] = await window.showOpenFilePicker({
+        types:[{description:'AVL Dashboard JSON', accept:{'application/json':['.json']}}]
+      });
+      const file = await handle.getFile();
+      applyLoaded(JSON.parse(await file.text()));
+      currentFileHandle = handle;
+      toast('Loaded: '+handle.name);
+    }catch(e){ if(e.name!=='AbortError') alert('Load failed: '+e.message); }
+  } else {
+    document.getElementById('fileInput').click();
+  }
+}
+document.getElementById('fileInput').addEventListener('change', async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  try{ applyLoaded(JSON.parse(await f.text())); toast('Loaded: '+f.name); }
+  catch(err){ alert('Load failed: '+err.message); }
+  e.target.value = '';
+});
+document.getElementById('btnSave').addEventListener('click', saveCurrent);
+document.getElementById('btnSaveAs').addEventListener('click', saveAs);
+document.getElementById('btnLoad').addEventListener('click', loadFile);
+
+/* ===== Excel export / import ===== */
+function statusToText(v){ return (v===0||v===1||v===2) ? POS_TEXT[v] : ''; }
+function trajToText(v){
+  // Numeric value with label (e.g. "1.50 (At risk → On track)")
+  if(v === -1 || v == null) return '';
+  return (+v).toFixed(2) + ' (' + trajLabel(v) + ')';
+}
+function textToStatus(s){
+  if(s===''||s==null) return -1;
+  const t = String(s).trim().toLowerCase();
+  if(['on track','green','ok','g','2'].includes(t)) return 2;
+  if(['at risk','amber','yellow','warning','a','1'].includes(t)) return 1;
+  if(['off track','red','blocked','ko','r','0'].includes(t)) return 0;
+  return -1;
+}
+function textToTraj(s){
+  // Accept either a numeric (0-2 float) or status text.
+  if(s===''||s==null) return -1;
+  // Try parsing a leading number first
+  const m = String(s).trim().match(/^(-?\d+(?:\.\d+)?)/);
+  if(m){
+    const n = parseFloat(m[1]);
+    if(!isNaN(n)){
+      if(n === -1) return -1;
+      return Math.max(0, Math.min(2, n));
+    }
+  }
+  return textToStatus(s);
+}
+
+document.getElementById('btnExcelExport').addEventListener('click', ()=>{
+  const wb = XLSX.utils.book_new();
+  // Meta sheet
+  const meta = [
+    ['_type','AVL_WeeklyDashboard'],
+    ['_version', 3],
+    ['Title', state.meta.title],
+    ['Subtitle', state.meta.subtitle],
+    ['Author', state.meta.author],
+    ['Active Week', state.activeWeek],
+    ['Exported', new Date().toISOString()],
+    [],
+    ['Week','Global Mode','Global Manual Value']
+  ];
+  state.snapshots.forEach(s => meta.push([s.week, s.globalTrajMode, s.globalTrajManual]));
+  const metaWS = XLSX.utils.aoa_to_sheet(meta);
+  metaWS['!cols'] = [{wch:22},{wch:30},{wch:20}];
+  XLSX.utils.book_append_sheet(wb, metaWS, '_meta');
+  // One sheet per snapshot
+  state.snapshots.forEach(snap=>{
+    const data = [
+      ['Item','Weight','Comments',"Today's Status",'Trajectory','Next Step'],
+      ...snap.rows.map(r => [r.item, r.weight, r.comments, statusToText(r.status), trajToText(r.traj), r.next])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = [{wch:32},{wch:8},{wch:48},{wch:14},{wch:24},{wch:36}];
+    const name = snap.week.replace(/[\\\/\?\*\[\]]/g,'_').slice(0,31);
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  });
+  const filename = suggestedFilename('xlsx').replace('.xlsx','_history.xlsx');
+  XLSX.writeFile(wb, filename);
+  toast('Excel exported');
+});
+
+document.getElementById('btnExcelImport').addEventListener('click', ()=> document.getElementById('xlsxInput').click());
+document.getElementById('xlsxInput').addEventListener('change', async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    const buf = await f.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array'});
+    const newState = {
+      _type:'AVL_WeeklyDashboard', _version:2,
+      meta: { title: state.meta.title, subtitle: state.meta.subtitle, author: state.meta.author },
+      activeWeek: '',
+      snapshots: []
+    };
+    // Parse meta
+    if(wb.SheetNames.includes('_meta')){
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets['_meta'], {header:1, defval:''});
+      const globalMap = {}; // week → {mode, manualValue}
+      let inGlobalSection = false;
+      rows.forEach(r=>{
+        const k = String(r[0]||'').trim();
+        if(k==='Title') newState.meta.title = r[1] || newState.meta.title;
+        else if(k==='Subtitle') newState.meta.subtitle = r[1] || newState.meta.subtitle;
+        else if(k==='Author') newState.meta.author = r[1] || newState.meta.author;
+        else if(k==='Active Week') newState.activeWeek = r[1] || '';
+        else if(k==='Week') inGlobalSection = true;
+        else if(inGlobalSection && r[0]) globalMap[String(r[0])] = { mode: r[1]||'auto', manualValue: typeof r[2]==='number'?r[2]:2 };
+      });
+      newState._globalMap = globalMap;
+    }
+    // Parse each non-meta sheet
+    wb.SheetNames.filter(n=>n!=='_meta').forEach(name=>{
+      const aoa = XLSX.utils.sheet_to_json(wb.Sheets[name], {header:1, defval:''});
+      if(!aoa.length) return;
+      const header = aoa[0].map(h=>String(h||'').trim().toLowerCase());
+      const idx = {
+        item: header.findIndex(h=>h==='item'),
+        weight: header.findIndex(h=>h==='weight' || h==='w'),
+        comments: header.findIndex(h=>h==='comments' || h==='comment'),
+        status: header.findIndex(h=>h.includes("today") || h==='status'),
+        traj: header.findIndex(h=>h.includes('trajectory')),
+        next: header.findIndex(h=>h.includes('next'))
+      };
+      if(idx.item < 0) return; // not a data sheet
+      const rows = aoa.slice(1).filter(r=>r.some(c=>c!=='')).map(r=>({
+        id: uid(),
+        item: String(r[idx.item]||''),
+        weight: idx.weight>=0 ? (parseFloat(r[idx.weight])||0) : 1,
+        comments: idx.comments>=0 ? String(r[idx.comments]||'') : '',
+        status: idx.status>=0 ? textToStatus(r[idx.status]) : -1,
+        traj: idx.traj>=0 ? textToTraj(r[idx.traj]) : -1,
+        next: idx.next>=0 ? String(r[idx.next]||'') : ''
+      }));
+      const gMap = newState._globalMap?.[name] || {};
+      newState.snapshots.push({
+        week: name, savedAt: new Date().toISOString(),
+        globalTrajMode: gMap.mode === 'manual' ? 'manual' : 'auto',
+        globalTrajManual: typeof gMap.manualValue==='number' ? gMap.manualValue : 2,
+        rows
+      });
+    });
+    delete newState._globalMap;
+    if(!newState.snapshots.length){ alert('No valid data sheets found in workbook.'); return; }
+    if(!newState.snapshots.some(s=>s.week===newState.activeWeek)){
+      newState.activeWeek = newState.snapshots[0].week;
+    }
+    state = newState;
+    currentFileHandle = null;
+    render();
+    toast(`Imported ${newState.snapshots.length} week(s) from Excel`);
+  }catch(err){ alert('Import failed: '+err.message); console.error(err); }
+  e.target.value = '';
+});
+
+/* ===== PNG export ===== */
+document.getElementById('btnExportPng').addEventListener('click', async ()=>{
+  const node = document.getElementById('dashboard');
+  document.body.classList.add('exporting');
+  try{
+    const canvas = await html2canvas(node, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+    canvas.toBlob(b=>{
+      const safe = (state.meta.title||'Dashboard').replace(/[^\w\-]+/g,'_').slice(0,40);
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(b); a.download=`${safe}_${state.activeWeek}.png`;
+      document.body.appendChild(a); a.click(); a.remove();
+      toast('PNG exported');
+    });
+  }catch(e){ alert('Export failed: '+e.message); }
+  finally{ document.body.classList.remove('exporting'); }
+});
+document.getElementById('btnPrint').addEventListener('click', ()=> window.print());
+
+/* ===== Keyboard shortcuts ===== */
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveCurrent(); }
+  else if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='o'){ e.preventDefault(); loadFile(); }
+  else if(e.key==='Escape'){ closeTrajPicker(); document.getElementById('deriveModal').classList.remove('on'); }
+});
+
+/* ===== Init ===== */
+state = freshState();
+render();
+</script>
+</body>
+</html>

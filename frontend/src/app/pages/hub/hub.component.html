@@ -1,0 +1,62 @@
+<div class="content-wrapper hub-container">
+  <div class="hub-header animate-in">
+    <div class="hub-title">
+      <h2>My Workspace</h2>
+      <p class="text-muted">Manage your collaborative tools and projects</p>
+    </div>
+    
+    <div class="create-actions">
+      <button class="btn btn-primary" (click)="createNew('lmm')">
+        <i class="ico">📊</i> New LMM
+      </button>
+      <button class="btn btn-primary" (click)="createNew('organigram')">
+        <i class="ico">🌳</i> New Org
+      </button>
+      <button class="btn btn-primary" (click)="createNew('dashboard')">
+        <i class="ico">📈</i> New Dashboard
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-pills animate-in" style="animation-delay: 0.1s;">
+    <button class="pill" [class.active]="selectedToolType === ''" (click)="setFilter('')">All Files</button>
+    <button class="pill" [class.active]="selectedToolType === 'lmm'" (click)="setFilter('lmm')">LMM Planners</button>
+    <button class="pill" [class.active]="selectedToolType === 'organigram'" (click)="setFilter('organigram')">Organigrams</button>
+    <button class="pill" [class.active]="selectedToolType === 'dashboard'" (click)="setFilter('dashboard')">Dashboards</button>
+  </div>
+
+  <div class="file-grid animate-in" style="animation-delay: 0.2s;">
+    <div class="empty-state glass-panel" *ngIf="files.length === 0">
+      <div class="empty-icon">📂</div>
+      <h3>Your workspace is empty</h3>
+      <p class="text-muted">Create a new tool to get started.</p>
+    </div>
+
+    <div class="file-card glass-panel" *ngFor="let file of files">
+      <div class="card-top" (click)="openFile(file.id, file.tool_type)">
+        <div class="card-icon" [ngClass]="file.tool_type">
+          {{ file.tool_type === 'lmm' ? '📊' : file.tool_type === 'organigram' ? '🌳' : '📈' }}
+        </div>
+        <div class="card-details">
+          <h4 class="file-name" [title]="file.name">{{ file.name }}</h4>
+          <span class="file-type badge">{{ getToolName(file.tool_type) }}</span>
+          <span class="file-date">Updated {{ file.updated_at | date:'MMM d, y' }}</span>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-secondary btn-sm" (click)="openFile(file.id, file.tool_type)">Open</button>
+        <div class="action-group">
+          <button class="btn btn-icon" title="Share" (click)="openShareModal(file.id)">🔗</button>
+          <button class="btn btn-icon danger" title="Delete" (click)="deleteFile(file.id)">🗑️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-share-modal 
+  *ngIf="isShareModalOpen" 
+  [fileId]="selectedFileId" 
+  (close)="closeShareModal()"
+  (shared)="onShared($event)">
+</app-share-modal>

@@ -1,0 +1,20 @@
+<nav class="navbar" *ngIf="auth.isAuthenticated">
+  <div class="nav-container">
+    <div class="nav-brand" routerLink="/hub">
+      <div class="nav-logo"></div>
+      <span class="nav-title">AVL Portal</span>
+    </div>
+    
+    <div class="nav-links">
+      <a routerLink="/hub" routerLinkActive="active" class="nav-link">Workspace</a>
+      <a *ngIf="auth.isAdmin" routerLink="/admin" routerLinkActive="active" class="nav-link admin-link">Admin</a>
+      
+      <div class="nav-divider"></div>
+      
+      <div class="user-profile" *ngIf="auth.currentUser$ | async as user">
+        <span class="user-name">{{ user.display_name }}</span>
+        <button class="btn btn-secondary btn-sm" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+</nav>

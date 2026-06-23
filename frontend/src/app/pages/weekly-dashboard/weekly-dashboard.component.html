@@ -1,0 +1,76 @@
+<div class="content-wrapper" *ngIf="!loading">
+  <div class="dashboard-header animate-in">
+    <div class="title-section">
+      <input class="title-input" [(ngModel)]="state.meta.title" (ngModelChange)="triggerSave()" placeholder="Dashboard Title">
+      <input class="subtitle-input" [(ngModel)]="state.meta.subtitle" (ngModelChange)="triggerSave()" placeholder="Subtitle">
+    </div>
+
+    <div class="global-status-widget glass-panel">
+      <div class="widget-label">Global Trajectory</div>
+      <div class="faces">
+        <div class="face" style="background: var(--status-red)"></div>
+        <div class="face" style="background: var(--status-amber)"></div>
+        <div class="face" style="background: var(--status-green)"></div>
+      </div>
+      <div class="pointer-track">
+        <div class="pointer" *ngIf="effectiveGlobalPos !== -1" [style.left]="getPointerPosition(effectiveGlobalPos)"></div>
+      </div>
+      <div class="mode-toggles">
+        <button [class.active]="activeSnapshot.globalTrajMode === 'auto'" (click)="activeSnapshot.globalTrajMode = 'auto'; triggerSave()">Auto</button>
+        <button [class.active]="activeSnapshot.globalTrajMode === 'manual'" (click)="activeSnapshot.globalTrajMode = 'manual'; triggerSave()">Manual</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar animate-in" style="animation-delay: 0.1s;">
+    <button class="btn btn-primary btn-sm" (click)="addRow()">➕ Add Row</button>
+    <div class="spacer"></div>
+    <span class="save-status" [class.saving]="saving">{{ saving ? 'Saving...' : 'Saved' }}</span>
+  </div>
+
+  <div class="glass-panel table-wrapper animate-in" style="animation-delay: 0.2s;">
+    <table class="avl-table dash-table">
+      <thead>
+        <tr>
+          <th style="width: 20%">Item</th>
+          <th style="width: 5%">W</th>
+          <th style="width: 30%">Comments</th>
+          <th style="width: 10%">Status</th>
+          <th style="width: 15%">Trajectory</th>
+          <th style="width: 15%">Next Step</th>
+          <th style="width: 5%"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of activeSnapshot.rows">
+          <td>
+            <textarea class="inline-input bold" [(ngModel)]="row.item" (ngModelChange)="triggerSave()"></textarea>
+          </td>
+          <td>
+            <input type="number" class="inline-input center" [(ngModel)]="row.weight" (ngModelChange)="triggerSave()" step="0.5" min="0">
+          </td>
+          <td>
+            <textarea class="inline-input" [(ngModel)]="row.comments" (ngModelChange)="triggerSave()"></textarea>
+          </td>
+          <td class="center">
+            <div class="face clickable" [style.background]="getFaceColor(row.status)" (click)="cycleStatus(row)">
+              {{ row.status === -1 ? '—' : '' }}
+            </div>
+          </td>
+          <td class="center">
+            <input type="number" class="inline-input center" [(ngModel)]="row.traj" (ngModelChange)="triggerSave()" step="0.1" min="0" max="2" placeholder="0 - 2">
+          </td>
+          <td>
+            <textarea class="inline-input" [(ngModel)]="row.next" (ngModelChange)="triggerSave()"></textarea>
+          </td>
+          <td class="center">
+            <button class="btn btn-icon danger" (click)="deleteRow(row.id)">✕</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="activeSnapshot.rows.length === 0">
+      <p>No items in this week's dashboard. Click "Add Row" to begin.</p>
+    </div>
+  </div>
+</div>
