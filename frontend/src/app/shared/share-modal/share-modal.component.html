@@ -14,19 +14,19 @@
       <div *ngIf="successMsg" class="alert-success">{{ successMsg }}</div>
 
       <div class="form-group">
-        <label class="form-label" for="recipientEmail">Recipient Email</label>
+        <label class="form-label" for="targetEmail">Recipient Email</label>
         <input 
           type="email" 
-          id="recipientEmail" 
+          id="targetEmail" 
           class="form-control" 
-          [(ngModel)]="recipientEmail" 
+          [(ngModel)]="targetEmail" 
           placeholder="colleague@avl.com">
       </div>
     </div>
 
     <div class="modal-footer">
       <button class="btn" (click)="onClose()">Cancel</button>
-      <button class="btn btn-primary" [disabled]="!recipientEmail || loading" (click)="share()">
+      <button class="btn btn-primary" [disabled]="!targetEmail || loading" (click)="share()">
         {{ loading ? 'Sharing...' : 'Share Clone' }}
       </button>
     </div>

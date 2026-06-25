@@ -105,7 +105,7 @@ def delete_file(
     db.commit()
 
 
-@router.post("/{file_id}/share", response_model=FileOut, status_code=status.HTTP_201_CREATED)
+@router.post("/{file_id}/share", status_code=status.HTTP_201_CREATED)
 def share_file(
     file_id: int,
     body: ShareRequest,
@@ -118,8 +118,8 @@ def share_file(
     - Verifies the sender owns the file
     - Looks up the recipient by email
     - Creates a COMPLETE DUPLICATE with the recipient as owner
-    - Appends "(Shared by <sender>)" to the file name
-    - Recipient's edits never affect the sender's original
+    - Appends "(Shared)" to the file name
+    - Tracks who shared it using shared_by_user_id
     """
     # 1. Verify sender owns the file
     source_file = db.query(File).filter(File.id == file_id).first()
@@ -129,7 +129,7 @@ def share_file(
         raise HTTPException(status_code=403, detail="You can only share your own files")
 
     # 2. Look up recipient
-    recipient = db.query(User).filter(User.email == body.recipient_email).first()
+    recipient = db.query(User).filter(User.email == body.target_email).first()
     if not recipient:
         raise HTTPException(status_code=404, detail="Recipient not found. They must register first.")
     if not recipient.is_active:
@@ -138,15 +138,15 @@ def share_file(
         raise HTTPException(status_code=400, detail="You cannot share a file with yourself")
 
     # 3. Create a complete duplicate
-    shared_name = f"{source_file.name} (Shared by {current_user.display_name})"
     cloned_file = File(
         owner_id=recipient.id,
         tool_type=source_file.tool_type,
-        name=shared_name,
-        json_payload=source_file.json_payload,   # Deep copy of the JSON string
+        name=f"{source_file.name} (Shared)",
+        json_payload=source_file.json_payload,
+        shared_by_user_id=current_user.id,
     )
     db.add(cloned_file)
     db.commit()
     db.refresh(cloned_file)
 
-    return cloned_file
+    return {"message": "File shared successfully"}

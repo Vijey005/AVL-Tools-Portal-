@@ -52,6 +52,9 @@ export class WeeklyDashboardComponent implements OnInit, OnDestroy {
   saving: boolean = false;
   hasUnsavedChanges = false;
   
+  deletingRowId: string | null = null;
+  deletingWeek: boolean = false;
+  
   private saveSubject = new Subject<void>();
   private sub!: Subscription;
 
@@ -198,9 +201,17 @@ export class WeeklyDashboardComponent implements OnInit, OnDestroy {
   }
 
   deleteRow(id: string) {
-    if (confirm('Delete this item?')) {
+    if (this.deletingRowId === id) {
       this.activeSnapshot.rows = this.activeSnapshot.rows.filter(r => r.id !== id);
+      this.deletingRowId = null;
       this.triggerSave(true);
+    } else {
+      this.deletingRowId = id;
+      setTimeout(() => {
+        if (this.deletingRowId === id) {
+          this.deletingRowId = null;
+        }
+      }, 3000);
     }
   }
 
@@ -266,10 +277,16 @@ export class WeeklyDashboardComponent implements OnInit, OnDestroy {
         alert("Cannot delete the only week snapshot.");
         return;
     }
-    if (confirm(`Delete week '${this.state.activeWeek}'?`)) {
+    if (this.deletingWeek) {
         this.state.snapshots = this.state.snapshots.filter(s => s.week !== this.state.activeWeek);
         this.state.activeWeek = this.state.snapshots[this.state.snapshots.length - 1].week;
+        this.deletingWeek = false;
         this.triggerSave(true);
+    } else {
+        this.deletingWeek = true;
+        setTimeout(() => {
+            this.deletingWeek = false;
+        }, 3000);
     }
   }
   

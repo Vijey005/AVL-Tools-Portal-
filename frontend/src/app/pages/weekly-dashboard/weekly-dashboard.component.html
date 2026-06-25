@@ -63,7 +63,8 @@
         Rename
       </button>
       <button class="btn-ghost danger-text" (click)="deleteWeek()" title="Delete week">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        <svg *ngIf="!deletingWeek" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        <span *ngIf="deletingWeek" style="font-size: 12px; font-weight: bold;">Confirm Delete?</span>
       </button>
     </div>
 
@@ -148,7 +149,9 @@
             <div class="row-actions">
               <button (click)="moveRowUp(i)" [disabled]="i === 0" title="Up">▲</button>
               <button (click)="moveRowDown(i)" [disabled]="i === activeSnapshot.rows.length - 1" title="Down">▼</button>
-              <button class="danger" (click)="deleteRow(row.id)" title="Remove">✕</button>
+              <button class="danger" (click)="deleteRow(row.id)" title="Remove">
+                {{ deletingRowId === row.id ? 'Confirm?' : '✕' }}
+              </button>
             </div>
             <div class="weight-wrapper">
               <span class="wt-lbl">wt:</span>

@@ -25,38 +25,92 @@
     <button class="pill" [class.active]="selectedToolType === 'dashboard'" (click)="setFilter('dashboard')">Dashboards</button>
   </div>
 
-  <div class="file-grid animate-in" style="animation-delay: 0.2s;">
-    <div class="empty-state glass-panel" *ngIf="files.length === 0">
-      <div class="empty-icon">📂</div>
-      <h3>Your workspace is empty</h3>
-      <p class="text-muted">Create a new tool to get started.</p>
-    </div>
-
-    <div class="file-card glass-panel" *ngFor="let file of files">
-      <div class="card-top" (click)="openFile(file.id, file.tool_type)">
-        <div class="card-icon" [ngClass]="file.tool_type">
-          {{ file.tool_type === 'lmm' ? '📊' : file.tool_type === 'organigram' ? '🌳' : '📈' }}
-        </div>
-        <div class="card-details">
-          <h4 class="file-name" [title]="file.name">{{ file.name }}</h4>
-          <span class="file-type badge">{{ getToolName(file.tool_type) }}</span>
-          <span class="file-date">Updated {{ file.updated_at | date:'MMM d, y' }}</span>
-        </div>
-      </div>
-      <div class="card-actions">
-        <button class="btn btn-secondary btn-sm" (click)="openFile(file.id, file.tool_type)">Open</button>
-        <div class="action-group">
-          <button class="btn btn-icon" title="Share" (click)="openShareModal(file.id)">🔗</button>
-          <button class="btn btn-icon danger" title="Delete" (click)="deleteFile(file.id)">🗑️</button>
-        </div>
-      </div>
-    </div>
+  <div class="tabs-nav animate-in" style="animation-delay: 0.15s;">
+    <button class="tab-item" [class.active]="activeTab === 'my-projects'" (click)="setTab('my-projects')">
+      My Projects ({{ myProjects.length }})
+    </button>
+    <button class="tab-item" [class.active]="activeTab === 'shared-with-me'" (click)="setTab('shared-with-me')">
+      Shared with Me ({{ sharedWithMe.length }})
+    </button>
   </div>
+
+  @if (activeTab === 'my-projects') {
+    <div class="file-grid animate-in" style="animation-delay: 0.2s;">
+      @for (file of myProjects; track file.id) {
+        <div class="file-card glass-panel">
+          <div class="card-top" (click)="openFile(file.id, file.tool_type)">
+            <div class="card-icon" [ngClass]="file.tool_type">
+              {{ file.tool_type === 'lmm' ? '📊' : file.tool_type === 'organigram' ? '🌳' : '📈' }}
+            </div>
+            <div class="card-details">
+              <h4 class="file-name" [title]="file.name">{{ file.name }}</h4>
+              <span class="file-type badge">{{ getToolName(file.tool_type) }}</span>
+              <span class="file-date">Updated {{ file.updated_at | date:'MMM d, y' }}</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-secondary btn-sm" (click)="openFile(file.id, file.tool_type)">Open</button>
+            <div class="action-group">
+              @if (deletingFileId === file.id) {
+                <button class="btn btn-icon danger" title="Confirm Delete" (click)="$event.stopPropagation(); deleteFile(file.id)">⚠️ Confirm</button>
+                <button class="btn btn-icon" title="Cancel Delete" (click)="$event.stopPropagation(); cancelDelete()">✕</button>
+              } @else {
+                <button class="btn btn-icon" title="Share" (click)="$event.stopPropagation(); openShareModal(file.id)">🔗</button>
+                <button class="btn btn-icon danger" title="Delete" (click)="$event.stopPropagation(); deleteFile(file.id)">🗑️</button>
+              }
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state glass-panel">
+          <div class="empty-icon">📂</div>
+          <h3>No projects found</h3>
+          <p class="text-muted">Create a new tool to get started.</p>
+        </div>
+      }
+    </div>
+  } @else if (activeTab === 'shared-with-me') {
+    <div class="file-grid animate-in" style="animation-delay: 0.2s;">
+      @for (file of sharedWithMe; track file.id) {
+        <div class="file-card glass-panel">
+          <div class="card-top" (click)="openFile(file.id, file.tool_type)">
+            <div class="card-icon" [ngClass]="file.tool_type">
+              {{ file.tool_type === 'lmm' ? '📊' : file.tool_type === 'organigram' ? '🌳' : '📈' }}
+            </div>
+            <div class="card-details">
+              <h4 class="file-name" [title]="file.name">{{ file.name }}</h4>
+              <span class="file-type badge">{{ getToolName(file.tool_type) }}</span>
+              <span class="file-date">Updated {{ file.updated_at | date:'MMM d, y' }}</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-secondary btn-sm" (click)="openFile(file.id, file.tool_type)">Open</button>
+            <div class="action-group">
+              @if (deletingFileId === file.id) {
+                <button class="btn btn-icon danger" title="Confirm Delete" (click)="$event.stopPropagation(); deleteFile(file.id)">⚠️ Confirm</button>
+                <button class="btn btn-icon" title="Cancel Delete" (click)="$event.stopPropagation(); cancelDelete()">✕</button>
+              } @else {
+                <button class="btn btn-icon" title="Share" (click)="$event.stopPropagation(); openShareModal(file.id)">🔗</button>
+                <button class="btn btn-icon danger" title="Delete" (click)="$event.stopPropagation(); deleteFile(file.id)">🗑️</button>
+              }
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state glass-panel">
+          <div class="empty-icon">🤝</div>
+          <h3>No shared projects</h3>
+          <p class="text-muted">Projects shared with you by others will appear here.</p>
+        </div>
+      }
+    </div>
+  }
 </div>
 
-<app-share-modal 
-  *ngIf="isShareModalOpen" 
-  [fileId]="selectedFileId" 
-  (close)="closeShareModal()"
-  (shared)="onShared($event)">
-</app-share-modal>
+@if (isShareModalOpen) {
+  <app-share-modal 
+    [fileId]="selectedFileId" 
+    (close)="closeShareModal()"
+    (shared)="onShared($event)">
+  </app-share-modal>
+}

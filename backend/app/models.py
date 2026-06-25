@@ -27,7 +27,7 @@ class User(Base):
     created_at = Column(DateTime, default=_utcnow, nullable=False)
 
     # Relationship to files
-    files = relationship("File", back_populates="owner", cascade="all, delete-orphan")
+    files = relationship("File", back_populates="owner", cascade="all, delete-orphan", foreign_keys="File.owner_id")
 
     def __repr__(self):
         return f"<User id={self.id} email={self.email!r}>"
@@ -38,14 +38,16 @@ class File(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    shared_by_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     tool_type = Column(String(20), nullable=False, index=True)       # 'lmm' | 'organigram' | 'dashboard'
     name = Column(String(255), nullable=False)
     json_payload = Column(Text, nullable=False, default="{}")
     created_at = Column(DateTime, default=_utcnow, nullable=False)
     updated_at = Column(DateTime, default=_utcnow, onupdate=_utcnow, nullable=False)
 
-    # Relationship to owner
-    owner = relationship("User", back_populates="files")
+    # Relationships
+    owner = relationship("User", back_populates="files", foreign_keys=[owner_id])
+    shared_by_user = relationship("User", foreign_keys=[shared_by_user_id])
 
     def __repr__(self):
         return f"<File id={self.id} name={self.name!r} tool={self.tool_type}>"

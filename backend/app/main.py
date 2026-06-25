@@ -61,3 +61,5 @@ def health_check():
         "app": "AVL Unified Tools Portal",
         "version": "1.0.0",
     }
+
+

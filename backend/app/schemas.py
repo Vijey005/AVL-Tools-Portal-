@@ -69,6 +69,7 @@ class FileOut(BaseModel):
     tool_type: str
     name: str
     json_payload: str
+    shared_by_user_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 
@@ -82,6 +83,7 @@ class FileListItem(BaseModel):
     owner_id: int
     tool_type: str
     name: str
+    shared_by_user_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 
@@ -90,4 +92,4 @@ class FileListItem(BaseModel):
 
 
 class ShareRequest(BaseModel):
-    recipient_email: EmailStr
+    target_email: EmailStr

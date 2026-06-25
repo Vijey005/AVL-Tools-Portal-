@@ -35,8 +35,8 @@ export class ApiService {
     return this.http.delete<any>(`${this.apiUrl}/files/${id}`);
   }
 
-  shareFile(id: number, recipientEmail: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/files/${id}/share`, { recipient_email: recipientEmail });
+  shareFile(id: number, targetEmail: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/files/${id}/share`, { target_email: targetEmail });
   }
 
   // --- Admin API ---

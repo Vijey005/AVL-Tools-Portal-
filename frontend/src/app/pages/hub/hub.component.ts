@@ -13,7 +13,10 @@ import { ShareModalComponent } from '../../shared/share-modal/share-modal.compon
 })
 export class HubComponent implements OnInit {
   files: any[] = [];
+  myProjects: any[] = [];
+  sharedWithMe: any[] = [];
   selectedToolType: string = '';
+  activeTab: 'my-projects' | 'shared-with-me' = 'my-projects';
 
   // Share Modal state
   isShareModalOpen = false;
@@ -28,7 +31,13 @@ export class HubComponent implements OnInit {
   loadFiles() {
     this.api.getFiles(this.selectedToolType || undefined).subscribe(files => {
       this.files = files;
+      this.myProjects = files.filter(f => !f.shared_by_user_id);
+      this.sharedWithMe = files.filter(f => f.shared_by_user_id);
     });
+  }
+
+  setTab(tab: 'my-projects' | 'shared-with-me') {
+    this.activeTab = tab;
   }
 
   setFilter(type: string) {
@@ -60,12 +69,27 @@ export class HubComponent implements OnInit {
     else if (toolType === 'dashboard') this.router.navigate(['/tools/dashboard', id]);
   }
 
+  deletingFileId: number | null = null;
+
   deleteFile(id: number) {
-    if (confirm('Are you sure you want to delete this file? This cannot be undone.')) {
-      this.api.deleteFile(id).subscribe(() => {
-        this.loadFiles();
+    if (this.deletingFileId === id) {
+      this.api.deleteFile(id).subscribe({
+        next: () => {
+          this.deletingFileId = null;
+          this.loadFiles();
+        },
+        error: (err) => {
+          console.error(err);
+          this.deletingFileId = null;
+        }
       });
+    } else {
+      this.deletingFileId = id;
     }
+  }
+
+  cancelDelete() {
+    this.deletingFileId = null;
   }
 
   openShareModal(id: number) {
@@ -78,10 +102,9 @@ export class HubComponent implements OnInit {
     this.selectedFileId = null;
   }
 
-  onShared(clonedFile: any) {
-    // Shared successfully
+  onShared(response: any) {
     this.closeShareModal();
-    // Maybe show a toast
+    this.loadFiles();
   }
 
   getToolName(type: string) {

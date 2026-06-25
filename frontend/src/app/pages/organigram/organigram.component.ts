@@ -715,7 +715,20 @@ export class OrganigramComponent implements OnInit, AfterViewInit, OnDestroy {
           (row.querySelector('[data-act="del"]') as HTMLElement).onclick = (ev) => {
             ev.stopPropagation();
             const entry = findDirectoryEntry(id); if (!entry) return;
-            if (!confirm(`Remove "${entry.name}" from the directory?`)) return;
+            const btn = ev.currentTarget as HTMLButtonElement;
+            if (btn.textContent === 'Delete') {
+              btn.textContent = 'Confirm?';
+              btn.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+              btn.style.color = 'rgb(239, 68, 68)';
+              setTimeout(() => {
+                if (btn.textContent === 'Confirm?') {
+                  btn.textContent = 'Delete';
+                  btn.style.backgroundColor = '';
+                  btn.style.color = '';
+                }
+              }, 3000);
+              return;
+            }
             directory = directory.filter((x: any) => x.id !== id);
             saveDirectory();
             const countEl = host.querySelector('#dirMgrCount') as HTMLElement;
@@ -786,8 +799,21 @@ export class OrganigramComponent implements OnInit, AfterViewInit, OnDestroy {
         if (onAfterSave) onAfterSave(draft); else closeModal();
       };
       if (!isNew) {
-        (host.querySelector('#ef_delete') as HTMLElement).onclick = () => {
-          if (!confirm(`Remove "${draft.name}" from the directory?`)) return;
+        (host.querySelector('#ef_delete') as HTMLElement).onclick = (ev) => {
+          const btn = ev.currentTarget as HTMLButtonElement;
+          if (btn.textContent === 'Delete') {
+            btn.textContent = 'Confirm?';
+            btn.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+            btn.style.color = 'rgb(239, 68, 68)';
+            setTimeout(() => {
+              if (btn.textContent === 'Confirm?') {
+                btn.textContent = 'Delete';
+                btn.style.backgroundColor = '';
+                btn.style.color = '';
+              }
+            }, 3000);
+            return;
+          }
           directory = directory.filter((e: any) => e.id !== draft.id);
           saveDirectory(); showStatus('Removed from directory', 'success');
           if (onAfterSave) onAfterSave(null); else closeModal();
@@ -846,10 +872,42 @@ export class OrganigramComponent implements OnInit, AfterViewInit, OnDestroy {
       setTimeout(drawLines, 50);
     };
 
+    function showNewChartConfirm() {
+      const html = `
+        <div class="modal-header">
+          <div class="modal-title"><span class="ico">📄</span> Start New Chart</div>
+          <button class="modal-close" id="modalCloseBtn">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="margin-bottom: 20px; color: var(--text-muted);">Are you sure you want to clear the current chart and start blank? Unsaved changes will be lost.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="confirmCancelBtn">Cancel</button>
+          <button class="btn primary" id="confirmOkBtn">Yes, Start Blank</button>
+        </div>`;
+      openModal(html);
+      (host.querySelector('#modalCloseBtn') as HTMLElement).onclick = closeModal;
+      (host.querySelector('#confirmCancelBtn') as HTMLElement).onclick = closeModal;
+      (host.querySelector('#confirmOkBtn') as HTMLElement).onclick = () => {
+        closeModal();
+        state = normalizeState({
+          title: 'New Project',
+          subtitle: 'Project team',
+          pm: { title: 'Project Manager', name: '(Name)' },
+          coordinators: [],
+          workPackages: [{ id: 'WP1', title: 'Work Package 1', leads: [mkPerson('(Lead)')], members: [], team: { label: 'Team 1', members: [] } }],
+          sideRoles: [],
+          bottomRoles: [],
+          options: clone(DEFAULT_STATE.options)
+        });
+        renderAll();
+        triggerSave();
+        showStatus('New chart created', 'success');
+      };
+    }
+
     (host.querySelector('#btnNew') as HTMLElement).onclick = () => {
-      if (!confirm('Clear current chart and start blank?')) return;
-      state = normalizeState({ title: 'New Project', subtitle: 'Project team', pm: { title: 'Project Manager', name: '(Name)' }, coordinators: [], workPackages: [{ id: 'WP1', title: 'Work Package 1', leads: [mkPerson('(Lead)')], members: [], team: { label: 'Team 1', members: [] } }], sideRoles: [], bottomRoles: [], options: clone(DEFAULT_STATE.options) });
-      renderAll(); triggerSave(); showStatus('New chart created', 'success');
+      showNewChartConfirm();
     };
 
     (host.querySelector('#btnSave') as HTMLElement).onclick = async () => {

@@ -65,18 +65,18 @@ print(f"[PASS] John's files: {len(body)} file(s)")
 
 # 8. Share file with Jane
 status, body = api("POST", f"/api/files/{file_id}/share", {
-    "recipient_email": "jane.smith@avl.com"
+    "target_email": "jane.smith@avl.com"
 }, token=john_token)
 assert status == 201, f"Share failed: {body}"
-assert "(Shared by John Doe)" in body["name"], f"Share name wrong: {body['name']}"
-print(f"[PASS] Shared to Jane: '{body['name']}' (id={body['id']})")
+assert body.get("message") == "File shared successfully", f"Share response wrong: {body}"
+print(f"[PASS] Shared to Jane: {body}")
 
 # 9. Login as Jane and verify she has the shared file
 status, body = api("POST", "/api/users/login", {"email": "jane.smith@avl.com", "password": "password"})
 jane_token = body["access_token"]
 status, body = api("GET", "/api/files", token=jane_token)
 assert status == 200 and len(body) >= 1, f"Jane's files failed: {body}"
-assert any("Shared by" in f["name"] for f in body), f"Shared file not in Jane's list: {body}"
+assert any("(Shared)" in f["name"] for f in body), f"Shared file not in Jane's list: {body}"
 print(f"[PASS] Jane has {len(body)} file(s), including shared one")
 
 # 10. Update the file (as John)

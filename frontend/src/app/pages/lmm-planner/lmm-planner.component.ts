@@ -1,72 +1,51 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
-interface LmmTask {
-  id: string;
-  name: string;
-  startDate: string;
-  endDate: string;
-  progress: number;
-  assignedResourceIds: string[];
-}
-
-interface LmmResource {
-  id: string;
-  name: string;
-  role: string;
-  capacity: number;
-}
-
-interface LmmState {
-  _type: string;
-  _version: number;
-  project: {
-    title: string;
-    manager: string;
-    status: 'planning' | 'active' | 'completed';
-  };
-  tasks: LmmTask[];
-  resources: LmmResource[];
-}
-
 @Component({
   selector: 'app-lmm-planner',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './lmm-planner.component.html',
   styleUrl: './lmm-planner.component.css'
 })
 export class LmmPlannerComponent implements OnInit, OnDestroy {
+  @ViewChild('plannerFrame') plannerFrame!: ElementRef<HTMLIFrameElement>;
+  
   fileId!: number;
   fileName: string = '';
-  state!: LmmState;
   loading: boolean = true;
   saving: boolean = false;
+  iframeLoaded: boolean = false;
   
-  viewMode: 'tasks' | 'resources' = 'tasks';
+  private saveSubject = new Subject<any>();
+  private initialPayload: any = null;
 
-  private saveSubject = new Subject<void>();
-
-  constructor(private route: ActivatedRoute, private api: ApiService) {}
+  constructor(private route: ActivatedRoute, private router: Router, private api: ApiService) {}
 
   ngOnInit() {
     this.fileId = Number(this.route.snapshot.paramMap.get('fileId'));
     this.api.getFile(this.fileId).subscribe({
       next: (file) => {
         this.fileName = file.name;
-        this.parsePayload(file.json_payload);
+        try {
+          this.initialPayload = JSON.parse(file.json_payload);
+        } catch {
+          this.initialPayload = null; // Let the iframe use default if empty
+        }
         this.loading = false;
       },
-      error: (err) => console.error(err)
+      error: (err) => {
+        console.error(err);
+        this.loading = false;
+      }
     });
 
-    this.saveSubject.pipe(debounceTime(1500)).subscribe(() => {
-      this.performSave();
+    this.saveSubject.pipe(debounceTime(1500)).subscribe((data) => {
+      this.performSave(data);
     });
   }
 
@@ -74,83 +53,43 @@ export class LmmPlannerComponent implements OnInit, OnDestroy {
     this.saveSubject.complete();
   }
 
-  parsePayload(payloadStr: string) {
-    try {
-      this.state = JSON.parse(payloadStr);
-      if (!this.state.tasks) this.initEmptyState();
-    } catch {
-      this.initEmptyState();
+  goBack() {
+    this.router.navigate(['/hub']);
+  }
+
+  onIframeLoad() {
+    this.iframeLoaded = true;
+    if (this.initialPayload && this.initialPayload.tasks) {
+      this.plannerFrame.nativeElement.contentWindow?.postMessage({
+        action: 'load',
+        data: this.initialPayload
+      }, '*');
     }
   }
 
-  initEmptyState() {
-    this.state = {
-      _type: 'AVL_LMM_Planner',
-      _version: 13,
-      project: {
-        title: 'New LMM Project',
-        manager: '',
-        status: 'planning'
-      },
-      tasks: [],
-      resources: []
-    };
-    this.triggerSave();
+  @HostListener('window:message', ['$event'])
+  onMessage(event: MessageEvent) {
+    if (event.data && event.data.action === 'save') {
+      this.saveSubject.next(event.data.data);
+    } else if (event.data && event.data.action === 'goBack') {
+      this.goBack();
+    }
   }
 
-  triggerSave() {
-    this.saveSubject.next();
-  }
-
-  performSave() {
+  performSave(data: any) {
     this.saving = true;
-    const payload = JSON.stringify(this.state);
-    this.api.updateFile(this.fileId, { name: this.fileName, json_payload: payload }).subscribe({
-      next: () => this.saving = false,
-      error: () => this.saving = false
+    this.plannerFrame?.nativeElement?.contentWindow?.postMessage({ action: 'saving' }, '*');
+    
+    const payload = JSON.stringify(data);
+    this.api.updateFile(this.fileId, { name: data.projectName || this.fileName, json_payload: payload }).subscribe({
+      next: () => {
+        this.saving = false;
+        this.plannerFrame?.nativeElement?.contentWindow?.postMessage({ action: 'saved' }, '*');
+      },
+      error: () => {
+        this.saving = false;
+        this.plannerFrame?.nativeElement?.contentWindow?.postMessage({ action: 'saved' }, '*');
+      }
     });
-  }
-
-  // Task Methods
-  addTask() {
-    this.state.tasks.push({
-      id: Math.random().toString(36).substring(2, 9),
-      name: 'New Task',
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-      progress: 0,
-      assignedResourceIds: []
-    });
-    this.triggerSave();
-  }
-
-  deleteTask(id: string) {
-    this.state.tasks = this.state.tasks.filter(t => t.id !== id);
-    this.triggerSave();
-  }
-
-  // Resource Methods
-  addResource() {
-    this.state.resources.push({
-      id: Math.random().toString(36).substring(2, 9),
-      name: 'New Resource',
-      role: 'Engineer',
-      capacity: 100
-    });
-    this.triggerSave();
-  }
-
-  deleteResource(id: string) {
-    this.state.resources = this.state.resources.filter(r => r.id !== id);
-    // Remove from assigned tasks
-    this.state.tasks.forEach(t => {
-      t.assignedResourceIds = t.assignedResourceIds.filter(rid => rid !== id);
-    });
-    this.triggerSave();
-  }
-
-  getResourceName(id: string): string {
-    const res = this.state.resources.find(r => r.id === id);
-    return res ? res.name : 'Unknown';
   }
 }

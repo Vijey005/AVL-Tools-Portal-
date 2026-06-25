@@ -15,7 +15,7 @@ export class ShareModalComponent {
   @Output() close = new EventEmitter<void>();
   @Output() shared = new EventEmitter<any>();
 
-  recipientEmail: string = '';
+  targetEmail: string = '';
   errorMsg: string = '';
   successMsg: string = '';
   loading = false;
@@ -23,13 +23,13 @@ export class ShareModalComponent {
   constructor(private api: ApiService) {}
 
   share() {
-    if (!this.fileId || !this.recipientEmail) return;
+    if (!this.fileId || !this.targetEmail) return;
 
     this.loading = true;
     this.errorMsg = '';
     this.successMsg = '';
 
-    this.api.shareFile(this.fileId, this.recipientEmail).subscribe({
+    this.api.shareFile(this.fileId, this.targetEmail).subscribe({
       next: (res) => {
         this.loading = false;
         this.successMsg = 'File cloned and shared successfully!';
