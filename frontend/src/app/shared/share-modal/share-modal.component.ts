@@ -4,47 +4,47 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 
 @Component({
-  selector: 'app-share-modal',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './share-modal.component.html',
-  styleUrls: ['./share-modal.component.css']
+ selector: 'app-share-modal',
+ standalone: true,
+ imports: [CommonModule, FormsModule],
+ templateUrl: './share-modal.component.html',
+ styleUrls: ['./share-modal.component.css']
 })
 export class ShareModalComponent {
-  @Input() fileId: number | null = null;
-  @Output() close = new EventEmitter<void>();
-  @Output() shared = new EventEmitter<any>();
+ @Input() fileId: number | null = null;
+ @Output() close = new EventEmitter<void>();
+ @Output() shared = new EventEmitter<any>();
 
-  targetEmail: string = '';
-  errorMsg: string = '';
-  successMsg: string = '';
-  loading = false;
+ targetEmail: string = '';
+ errorMsg: string = '';
+ successMsg: string = '';
+ loading = false;
 
-  constructor(private api: ApiService) {}
+ constructor(private api: ApiService) {}
 
-  share() {
-    if (!this.fileId || !this.targetEmail) return;
+ share() {
+  if (!this.fileId || !this.targetEmail) return;
 
-    this.loading = true;
-    this.errorMsg = '';
-    this.successMsg = '';
+  this.loading = true;
+  this.errorMsg = '';
+  this.successMsg = '';
 
-    this.api.shareFile(this.fileId, this.targetEmail).subscribe({
-      next: (res) => {
-        this.loading = false;
-        this.successMsg = 'File cloned and shared successfully!';
-        setTimeout(() => {
-          this.shared.emit(res);
-        }, 1000);
-      },
-      error: (err) => {
-        this.loading = false;
-        this.errorMsg = err.error?.detail || 'Error sharing file.';
-      }
-    });
-  }
+  this.api.shareFile(this.fileId, this.targetEmail).subscribe({
+   next: (res) => {
+    this.loading = false;
+    this.successMsg = 'File cloned and shared successfully!';
+    setTimeout(() => {
+     this.shared.emit(res);
+    }, 1000);
+   },
+   error: (err) => {
+    this.loading = false;
+    this.errorMsg = err.error?.detail || 'Error sharing file.';
+   }
+  });
+ }
 
-  onClose() {
-    this.close.emit();
-  }
+ onClose() {
+  this.close.emit();
+ }
 }

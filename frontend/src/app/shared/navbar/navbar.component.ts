@@ -4,16 +4,19 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
-  selector: 'app-navbar',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
-  templateUrl: './navbar.component.html',
-  styleUrls: ['./navbar.component.css']
+ selector: 'app-navbar',
+ standalone: true,
+ imports: [CommonModule, RouterModule],
+ templateUrl: './navbar.component.html',
+ styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent {
-  constructor(public auth: AuthService) {}
+ constructor(public auth: AuthService) {}
 
-  logout() {
-    this.auth.logout();
+ logout() {
+  const confirmed = window.confirm('Sign out of AVL Tools Portal?');
+  if (confirmed) {
+   this.auth.logout();
   }
+ }
 }

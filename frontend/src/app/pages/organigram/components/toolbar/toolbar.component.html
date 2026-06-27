@@ -1,103 +1,103 @@
 <div class="toolbar" (click)="closeSettings()">
-  <!-- Brand -->
-  <div class="brand">
-    <div class="brand-dot"></div>
-    <div>
-      <div class="brand-name">AVL Organigram Creator</div>
-      <span class="brand-sub">v2.0 · Angular Edition</span>
-    </div>
+ <!-- Brand -->
+ <div class="brand">
+  <div class="brand-dot"></div>
+  <div>
+   <div class="brand-name">AVL Organigram Creator</div>
+   <span class="brand-sub">v2.0 · Angular Edition</span>
+  </div>
+ </div>
+
+ <button class="btn" id="orgBtnNew"   (click)="onAction('new')">    <span class="ico">📄</span> New</button>
+ <button class="btn" id="orgBtnLoad"  (click)="onAction('load')">   <span class="ico">📂</span> Open</button>
+ <button class="btn primary" id="orgBtnSave" (click)="onAction('save')">
+  <span class="ico">{{ isSaving ? '⏳' : '💾' }}</span> {{ isSaving ? 'Saving…' : 'Save' }}
+ </button>
+ <button class="btn" id="orgBtnDir"   (click)="onAction('directory')">
+  <span class="ico">📇</span> Directory
+  <span class="dir-count">{{ dirCount }}</span>
+ </button>
+ <button class="btn" id="orgBtnPng"   (click)="onAction('exportPng')"><span class="ico">�-�️</span> Export PNG</button>
+ <button class="btn" id="orgBtnPrint"  (click)="onAction('print')">  <span class="ico">�-�️</span> Print / PDF</button>
+
+ <div class="spacer"></div>
+
+ <!-- Settings (click.stop so we don't immediately close via host listener) -->
+ <button class="btn" id="orgBtnSettings" (click)="toggleSettings($event)"><span class="ico">⚙️</span> Options</button>
+
+ <!-- Edit toggle -->
+ <div class="toggle" [class.on]="isEditMode" id="orgBtnEditToggle" (click)="toggleEdit.emit()">
+  <span class="dot"></span>
+  <span>{{ isEditMode ? 'Edit mode' : 'View mode' }}</span>
+ </div>
+
+ <!-- Settings popover -->
+ <div class="settings-pop" [class.open]="showSettings()" (click)="$event.stopPropagation()">
+  <h4>Sections</h4>
+  <label>
+   <input type="checkbox" [checked]="options.showSideRoles"
+       (change)="toggleSection('showSideRoles', $any($event.target).checked)">
+   Show side roles column
+  </label>
+  <label>
+   <input type="checkbox" [checked]="options.showCoordinators"
+       (change)="toggleSection('showCoordinators', $any($event.target).checked)">
+   Show coordinators row
+  </label>
+  <label>
+   <input type="checkbox" [checked]="options.showTeamLabels"
+       (change)="toggleSection('showTeamLabels', $any($event.target).checked)">
+   Show team labels under WPs
+  </label>
+  <label>
+   <input type="checkbox" [checked]="options.showBottom"
+       (change)="toggleSection('showBottom', $any($event.target).checked)">
+   Show bottom roles section
+  </label>
+
+  <hr>
+  <h4>Contact details per zone</h4>
+
+  <!-- Coordinators -->
+  <div class="zone-group">
+   <div class="zone-title">Coordinators</div>
+   <div class="zone-checks">
+    <label *ngFor="let f of contactFields">
+     <input type="checkbox" [checked]="options.coordContact[f.key]"
+         (change)="toggleContact('coord', f.key, $any($event.target).checked)">
+     {{ f.label }}
+    </label>
+   </div>
   </div>
 
-  <button class="btn" id="orgBtnNew"     (click)="onAction('new')">       <span class="ico">📄</span> New</button>
-  <button class="btn" id="orgBtnLoad"    (click)="onAction('load')">      <span class="ico">📂</span> Open</button>
-  <button class="btn primary" id="orgBtnSave" (click)="onAction('save')">
-    <span class="ico">{{ isSaving ? '⏳' : '💾' }}</span> {{ isSaving ? 'Saving…' : 'Save' }}
-  </button>
-  <button class="btn" id="orgBtnDir"     (click)="onAction('directory')">
-    <span class="ico">📇</span> Directory
-    <span class="dir-count">{{ dirCount }}</span>
-  </button>
-  <button class="btn" id="orgBtnPng"     (click)="onAction('exportPng')"><span class="ico">🖼️</span> Export PNG</button>
-  <button class="btn" id="orgBtnPrint"   (click)="onAction('print')">   <span class="ico">🖨️</span> Print / PDF</button>
-
-  <div class="spacer"></div>
-
-  <!-- Settings (click.stop so we don't immediately close via host listener) -->
-  <button class="btn" id="orgBtnSettings" (click)="toggleSettings($event)"><span class="ico">⚙️</span> Options</button>
-
-  <!-- Edit toggle -->
-  <div class="toggle" [class.on]="isEditMode" id="orgBtnEditToggle" (click)="toggleEdit.emit()">
-    <span class="dot"></span>
-    <span>{{ isEditMode ? 'Edit mode' : 'View mode' }}</span>
+  <!-- Work Packages -->
+  <div class="zone-group">
+   <div class="zone-title">Work Packages (leads &amp; members)</div>
+   <div class="zone-checks">
+    <label *ngFor="let f of contactFields">
+     <input type="checkbox" [checked]="options.wpContact[f.key]"
+         (change)="toggleContact('wp', f.key, $any($event.target).checked)">
+     {{ f.label }}
+    </label>
+   </div>
   </div>
 
-  <!-- Settings popover -->
-  <div class="settings-pop" [class.open]="showSettings()" (click)="$event.stopPropagation()">
-    <h4>Sections</h4>
-    <label>
-      <input type="checkbox" [checked]="options.showSideRoles"
-             (change)="toggleSection('showSideRoles', $any($event.target).checked)">
-      Show side roles column
+  <!-- Teams -->
+  <div class="zone-group">
+   <div class="zone-title">Teams (team positions)</div>
+   <div class="zone-checks">
+    <label *ngFor="let f of contactFields">
+     <input type="checkbox" [checked]="options.teamContact[f.key]"
+         (change)="toggleContact('team', f.key, $any($event.target).checked)">
+     {{ f.label }}
     </label>
-    <label>
-      <input type="checkbox" [checked]="options.showCoordinators"
-             (change)="toggleSection('showCoordinators', $any($event.target).checked)">
-      Show coordinators row
-    </label>
-    <label>
-      <input type="checkbox" [checked]="options.showTeamLabels"
-             (change)="toggleSection('showTeamLabels', $any($event.target).checked)">
-      Show team labels under WPs
-    </label>
-    <label>
-      <input type="checkbox" [checked]="options.showBottom"
-             (change)="toggleSection('showBottom', $any($event.target).checked)">
-      Show bottom roles section
-    </label>
-
-    <hr>
-    <h4>Contact details per zone</h4>
-
-    <!-- Coordinators -->
-    <div class="zone-group">
-      <div class="zone-title">Coordinators</div>
-      <div class="zone-checks">
-        <label *ngFor="let f of contactFields">
-          <input type="checkbox" [checked]="options.coordContact[f.key]"
-                 (change)="toggleContact('coord', f.key, $any($event.target).checked)">
-          {{ f.label }}
-        </label>
-      </div>
-    </div>
-
-    <!-- Work Packages -->
-    <div class="zone-group">
-      <div class="zone-title">Work Packages (leads &amp; members)</div>
-      <div class="zone-checks">
-        <label *ngFor="let f of contactFields">
-          <input type="checkbox" [checked]="options.wpContact[f.key]"
-                 (change)="toggleContact('wp', f.key, $any($event.target).checked)">
-          {{ f.label }}
-        </label>
-      </div>
-    </div>
-
-    <!-- Teams -->
-    <div class="zone-group">
-      <div class="zone-title">Teams (team positions)</div>
-      <div class="zone-checks">
-        <label *ngFor="let f of contactFields">
-          <input type="checkbox" [checked]="options.teamContact[f.key]"
-                 (change)="toggleContact('team', f.key, $any($event.target).checked)">
-          {{ f.label }}
-        </label>
-      </div>
-    </div>
-
-    <div class="settings-hint">
-      Use <b>📇 Directory</b> to manage a reusable people database. Then click
-      <b>📇 from directory</b> next to any add-person button to pick instead of typing.
-      The directory is stored on the server and can be shared with team members.
-    </div>
+   </div>
   </div>
+
+  <div class="settings-hint">
+   Use <b>📇 Directory</b> to manage a reusable people database. Then click
+   <b>📇 from directory</b> next to any add-person button to pick instead of typing.
+   The directory is stored on the server and can be shared with team members.
+  </div>
+ </div>
 </div>

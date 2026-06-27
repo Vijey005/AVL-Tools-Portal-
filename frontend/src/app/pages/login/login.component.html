@@ -1,65 +1,82 @@
 <div class="login-wrapper">
-  <div class="login-card glass-panel animate-in">
-    <div class="brand">
-      <div class="logo-glow"></div>
-      <h2>AVL</h2>
-      <h3>Unified Tools Portal</h3>
-      <p class="subtitle">Log in to your workspace</p>
-    </div>
-
-    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
-      <div *ngIf="errorMsg" class="alert alert-error">
-        {{ errorMsg }}
-      </div>
-
-      <div class="form-group" *ngIf="!isLoginMode">
-        <label class="form-label" for="displayName">Display Name</label>
-        <input 
-          type="text" 
-          id="displayName" 
-          name="displayName" 
-          class="form-control" 
-          [(ngModel)]="formData.display_name" 
-          required
-          placeholder="e.g. Jane Doe">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="email">Email</label>
-        <input 
-          type="email" 
-          id="email" 
-          name="email" 
-          class="form-control" 
-          [(ngModel)]="formData.email" 
-          required
-          placeholder="name@avl.com">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="password">Password</label>
-        <input 
-          type="password" 
-          id="password" 
-          name="password" 
-          class="form-control" 
-          [(ngModel)]="formData.password" 
-          required
-          placeholder="••••••••">
-      </div>
-
-      <button type="submit" class="btn btn-primary w-100" [disabled]="!loginForm.form.valid">
-        {{ isLoginMode ? 'Sign In' : 'Create Account' }}
-      </button>
-    </form>
-
-    <div class="toggle-mode">
-      <span class="text-muted">
-        {{ isLoginMode ? "Don't have an account?" : "Already have an account?" }}
-      </span>
-      <button class="btn-link" type="button" (click)="toggleMode()">
-        {{ isLoginMode ? 'Register here' : 'Login here' }}
-      </button>
-    </div>
+ <div class="login-header-bar">
+  <div class="login-header-inner">
+   <span class="login-logo-mark">
+    <img src="/avl-logo.png" alt="AVL" class="login-logo-img">
+   </span>
+   <div class="login-header-copy">
+    <span class="login-header-title">Tools Portal</span>
+    <span class="login-header-subtitle">Engineering Workspace</span>
+   </div>
   </div>
+ </div>
+
+ <div class="login-body">
+  <div class="login-intro">
+   <h1>AVL Tools Portal</h1>
+   <p>Access your LMM planners, organigrams, and weekly dashboards from one workspace.</p>
+  </div>
+
+  <div class="login-card glass-panel animate-in">
+   <div class="brand">
+    <h2>Welcome</h2>
+    <p class="subtitle">{{ isLoginMode ? 'Sign in to your workspace' : 'Create your account' }}</p>
+   </div>
+
+   <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+    <div *ngIf="errorMsg" class="alert alert-error">
+     {{ errorMsg }}
+    </div>
+
+    <div class="form-group" *ngIf="!isLoginMode">
+     <label class="form-label" for="displayName">Display Name</label>
+     <input
+      type="text"
+      id="displayName"
+      name="displayName"
+      class="form-control"
+      [(ngModel)]="formData.display_name"
+      required
+      placeholder="e.g. Jane Doe">
+    </div>
+
+    <div class="form-group">
+     <label class="form-label" for="email">Email</label>
+     <input
+      type="email"
+      id="email"
+      name="email"
+      class="form-control"
+      [(ngModel)]="formData.email"
+      required
+      placeholder="name@avl.com">
+    </div>
+
+    <div class="form-group">
+     <label class="form-label" for="password">Password</label>
+     <input
+      type="password"
+      id="password"
+      name="password"
+      class="form-control"
+      [(ngModel)]="formData.password"
+      required
+      placeholder="Enter your password">
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100" [disabled]="!loginForm.form.valid">
+     {{ isLoginMode ? 'Sign In' : 'Create Account' }}
+    </button>
+   </form>
+
+   <div class="toggle-mode">
+    <span class="text-muted">
+     {{ isLoginMode ? "Don't have an account?" : "Already have an account?" }}
+    </span>
+    <button class="btn-link" type="button" (click)="toggleMode()">
+     {{ isLoginMode ? 'Register here' : 'Sign in here' }}
+    </button>
+   </div>
+  </div>
+ </div>
 </div>

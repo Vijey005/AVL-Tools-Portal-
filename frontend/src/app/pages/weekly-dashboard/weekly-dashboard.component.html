@@ -1,183 +1,203 @@
-<div class="dashboard-container" id="dashboard-content" *ngIf="!loading">
-
-  <!-- Minimal Header -->
-  <header class="dashboard-header animate-in">
-    <div class="header-main">
-      <div class="title-group">
-        <input class="header-title" [(ngModel)]="state.meta.title" (ngModelChange)="triggerSave()" placeholder="Dashboard Title">
-        <div class="week-badge">
-          <select class="week-dropdown" [ngModel]="state.activeWeek" (ngModelChange)="changeWeek($event)">
-            <option *ngFor="let snap of state.snapshots" [value]="snap.week">{{ snap.week }}</option>
-          </select>
-        </div>
-      </div>
-      <input class="header-subtitle" [(ngModel)]="state.meta.subtitle" (ngModelChange)="triggerSave()" placeholder="Optional subtitle...">
+<div class="content-wrapper">
+<div class="dashboard-container" id="dashboard-content" *ngIf="!loading && !loadError">
+ <header class="dashboard-header animate-in">
+  <div class="header-main">
+   <div class="title-group">
+    <input class="header-title" [(ngModel)]="state.meta.title" (ngModelChange)="triggerSave()" placeholder="Dashboard Title">
+    <div class="week-badge">
+     <select class="week-dropdown" [ngModel]="state.activeWeek" (ngModelChange)="changeWeek($event)">
+      <option *ngFor="let snap of state.snapshots" [value]="snap.week">{{ snap.week }}</option>
+     </select>
     </div>
-
-    <!-- Global Trajectory Status Card -->
-    <div class="global-status-card">
-      <div class="status-header">
-        <span class="status-label">Global Trajectory</span>
-        <div class="mode-toggle">
-          <button [class.active]="activeSnapshot.globalTrajMode === 'auto'" (click)="activeSnapshot.globalTrajMode = 'auto'; triggerSave()">Auto</button>
-          <button [class.active]="activeSnapshot.globalTrajMode === 'manual'" (click)="activeSnapshot.globalTrajMode = 'manual'; triggerSave()">Manual</button>
-        </div>
-      </div>
-      
-      <div class="status-display">
-        <!-- Visual Tracker -->
-        <div class="tracker-widget">
-          <div class="tracker-bg">
-            <div class="tracker-zone red"></div>
-            <div class="tracker-zone amber"></div>
-            <div class="tracker-zone green"></div>
-          </div>
-          <div class="tracker-marker" *ngIf="effectiveGlobalPos !== -1" [style.left]="getPointerPosition(effectiveGlobalPos)"></div>
-        </div>
-        <!-- Manual override if applicable -->
-        <div class="manual-control" *ngIf="activeSnapshot.globalTrajMode === 'manual'">
-          <input type="range" min="0" max="2" step="0.05" [(ngModel)]="activeSnapshot.globalTrajManual" (ngModelChange)="triggerSave()">
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Toolbar Actions -->
-  <div class="action-bar animate-in no-print" style="animation-delay: 0.1s;">
-    <div class="action-group">
-      <button class="btn-ghost" (click)="addRow()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-        Add Row
-      </button>
-      <div class="divider"></div>
-      <button class="btn-ghost" (click)="createNewWeek()" title="Start next week">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        New Week
-      </button>
-      <button class="btn-ghost" (click)="duplicateWeek()" title="Duplicate current">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-        Duplicate
-      </button>
-      <button class="btn-ghost" (click)="renameWeek()" title="Rename week">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Rename
-      </button>
-      <button class="btn-ghost danger-text" (click)="deleteWeek()" title="Delete week">
-        <svg *ngIf="!deletingWeek" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-        <span *ngIf="deletingWeek" style="font-size: 12px; font-weight: bold;">Confirm Delete?</span>
-      </button>
-    </div>
-
-    <!-- Hidden File Inputs -->
-    <input type="file" #jsonInput style="display: none" accept=".json" (change)="onImportJson($event)">
-    <input type="file" #excelInput style="display: none" accept=".xlsx, .xls" (change)="onImportExcel($event)">
-
-    <div class="action-group end">
-      <div class="dropdown">
-         <button class="btn-ghost dropdown-toggle">
-            Import
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-         </button>
-         <div class="dropdown-menu">
-            <button class="dropdown-item" (click)="excelInput.click()">Excel (.xlsx)</button>
-            <button class="dropdown-item" (click)="jsonInput.click()">JSON (.json)</button>
-         </div>
-      </div>
-
-      <div class="dropdown">
-         <button class="btn-ghost dropdown-toggle">
-            Export
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-         </button>
-         <div class="dropdown-menu">
-            <button class="dropdown-item" (click)="exportExcel()">Excel (.xlsx)</button>
-            <button class="dropdown-item" (click)="exportPdf()">PDF (.pdf)</button>
-            <button class="dropdown-item" (click)="exportJson()">JSON (.json)</button>
-         </div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="owner-field">
-        <span class="owner-label">Owner:</span>
-        <input [(ngModel)]="state.meta.author" (ngModelChange)="triggerSave()" placeholder="Unassigned">
-      </div>
-      
-      <div class="save-indicator" [class.saving]="saving || hasUnsavedChanges">
-        <span class="dot"></span>
-        {{ saving ? 'Saving...' : (hasUnsavedChanges ? 'Pending...' : 'Saved') }}
-      </div>
-    </div>
+   </div>
+   <input class="header-subtitle" [(ngModel)]="state.meta.subtitle" (ngModelChange)="triggerSave()" placeholder="Optional subtitle...">
   </div>
 
-  <!-- Data Table -->
-  <div class="table-container animate-in" style="animation-delay: 0.2s;">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th style="width: 25%">Item</th>
-          <th style="width: 25%">Comments</th>
-          <th style="width: 8%; text-align: center;">Status</th>
-          <th style="width: 15%; text-align: center;">Trajectory</th>
-          <th style="width: 20%">Next Steps</th>
-          <th style="width: 7%" class="no-print"></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let row of activeSnapshot.rows; let i = index">
-          <td>
-            <textarea class="cell-input fw-600" [(ngModel)]="row.item" (ngModelChange)="triggerSave()" placeholder="Item name"></textarea>
-          </td>
-          <td>
-            <textarea class="cell-input" [(ngModel)]="row.comments" (ngModelChange)="triggerSave()" placeholder="Details"></textarea>
-          </td>
-          <td class="text-center">
-            <button class="status-btn" [ngClass]="{'red': row.status === 0, 'amber': row.status === 1, 'green': row.status === 2}" (click)="cycleStatus(row)">
-              <span *ngIf="row.status === -1">—</span>
-            </button>
-          </td>
-          <td class="text-center">
-            <div class="traj-cell">
-              <input type="range" class="traj-slider-sm" min="0" max="2" step="0.1" [(ngModel)]="row.traj" (ngModelChange)="triggerSave()">
-              <div class="traj-number">{{ row.traj !== -1 ? (row.traj | number:'1.1-1') : '-' }}</div>
-            </div>
-          </td>
-          <td>
-            <textarea class="cell-input" [(ngModel)]="row.next" (ngModelChange)="triggerSave()" placeholder="Action item"></textarea>
-          </td>
-          <td class="actions-cell no-print">
-            <div class="row-actions">
-              <button (click)="moveRowUp(i)" [disabled]="i === 0" title="Up">▲</button>
-              <button (click)="moveRowDown(i)" [disabled]="i === activeSnapshot.rows.length - 1" title="Down">▼</button>
-              <button class="danger" (click)="deleteRow(row.id)" title="Remove">
-                {{ deletingRowId === row.id ? 'Confirm?' : '✕' }}
-              </button>
-            </div>
-            <div class="weight-wrapper">
-              <span class="wt-lbl">wt:</span>
-              <input type="number" class="wt-input" min="0" step="0.5" [(ngModel)]="row.weight" (ngModelChange)="triggerSave()">
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    
-    <div class="empty-board" *ngIf="activeSnapshot.rows.length === 0">
-      <p>Your dashboard is empty.</p>
-      <button class="btn-primary sm" (click)="addRow()">Add First Item</button>
+  <!-- Global Trajectory Status Card -->
+  <div class="global-status-card">
+   <div class="status-header">
+    <span class="status-label">Global Trajectory</span>
+    <div class="mode-toggle">
+     <button [class.active]="activeSnapshot.globalTrajMode === 'auto'" (click)="activeSnapshot.globalTrajMode = 'auto'; triggerSave()">Auto</button>
+     <button [class.active]="activeSnapshot.globalTrajMode === 'manual'" (click)="activeSnapshot.globalTrajMode = 'manual'; triggerSave()">Manual</button>
     </div>
+   </div>
+   
+   <div class="status-display">
+    <!-- Visual Tracker -->
+    <div class="tracker-widget">
+     <div class="tracker-bg">
+      <div class="tracker-zone red"></div>
+      <div class="tracker-zone amber"></div>
+      <div class="tracker-zone green"></div>
+     </div>
+     <div class="tracker-marker" *ngIf="effectiveGlobalPos !== -1" [style.left]="getPointerPosition(effectiveGlobalPos)"></div>
+    </div>
+    <!-- Manual override if applicable -->
+    <div class="manual-control" *ngIf="activeSnapshot.globalTrajMode === 'manual'">
+     <input type="range" min="0" max="2" step="0.05" [(ngModel)]="activeSnapshot.globalTrajManual" (ngModelChange)="triggerSave()">
+    </div>
+   </div>
+  </div>
+ </header>
+
+ <!-- Toolbar Actions -->
+ <div class="action-bar animate-in no-print" style="animation-delay: 0.1s;">
+  <div class="action-group">
+   <button class="btn-ghost" (click)="addRow()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+    Add Row
+   </button>
+   <div class="divider"></div>
+   <button class="btn-ghost" (click)="createNewWeek()" title="Start next week">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    New Week
+   </button>
+   <button class="btn-ghost" (click)="duplicateWeek()" title="Duplicate current">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+    Duplicate
+   </button>
+   <button class="btn-ghost" (click)="renameWeek()" title="Rename week">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    Rename
+   </button>
+   <button class="btn-ghost danger-text" (click)="deleteWeek()" title="Delete week">
+    <svg *ngIf="!deletingWeek" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+    <span *ngIf="deletingWeek" style="font-size: 12px; font-weight: bold;">Confirm Delete?</span>
+   </button>
   </div>
 
-  <!-- Footer Stats -->
-  <footer class="dashboard-footer animate-in" style="animation-delay: 0.3s;">
-    <div class="stats-group">
-      <div class="stat-pill"><span class="dot green"></span> {{ onTrackCount }} On Track</div>
-      <div class="stat-pill"><span class="dot amber"></span> {{ atRiskCount }} At Risk</div>
-      <div class="stat-pill"><span class="dot red"></span> {{ offTrackCount }} Off Track</div>
-    </div>
-    <div class="meta-stats">
-      Total Items: {{ activeSnapshot.rows.length }}
-    </div>
-  </footer>
+  <!-- Hidden File Inputs -->
+  <input type="file" #jsonInput style="display: none" accept=".json" (change)="onImportJson($event)">
+  <input type="file" #excelInput style="display: none" accept=".xlsx, .xls" (change)="onImportExcel($event)">
 
+  <div class="action-group end">
+   <div class="dropdown">
+     <button class="btn-ghost dropdown-toggle">
+      Import
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+     </button>
+     <div class="dropdown-menu">
+      <button class="dropdown-item" (click)="excelInput.click()">Excel (.xlsx)</button>
+      <button class="dropdown-item" (click)="jsonInput.click()">JSON (.json)</button>
+     </div>
+   </div>
+
+   <div class="dropdown">
+     <button class="btn-ghost dropdown-toggle">
+      Export
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+     </button>
+     <div class="dropdown-menu">
+      <button class="dropdown-item" (click)="exportExcel()">Excel (.xlsx)</button>
+      <button class="dropdown-item" (click)="exportPdf()">PDF (.pdf)</button>
+      <button class="dropdown-item" (click)="exportJson()">JSON (.json)</button>
+     </div>
+   </div>
+
+   <div class="divider"></div>
+
+   <div class="owner-field">
+    <span class="owner-label">Owner:</span>
+    <input [(ngModel)]="state.meta.author" (ngModelChange)="triggerSave()" placeholder="Unassigned">
+   </div>
+   
+   <div class="save-indicator" [class.saving]="saving || hasUnsavedChanges">
+    <span class="dot"></span>
+    {{ saving ? 'Saving...' : (hasUnsavedChanges ? 'Pending...' : 'Saved') }}
+   </div>
+  </div>
+ </div>
+
+ <!-- Data Table -->
+ <div class="table-container animate-in" style="animation-delay: 0.2s;">
+  <table class="data-table">
+   <thead>
+    <tr>
+     <th style="width: 25%">Item</th>
+     <th style="width: 25%">Comments</th>
+     <th style="width: 8%; text-align: center;">Status</th>
+     <th style="width: 15%; text-align: center;">Trajectory</th>
+     <th style="width: 20%">Next Steps</th>
+     <th style="width: 7%" class="no-print"></th>
+    </tr>
+   </thead>
+   <tbody>
+    <tr *ngFor="let row of activeSnapshot.rows; let i = index">
+     <td>
+      <textarea class="cell-input fw-600" [(ngModel)]="row.item" (ngModelChange)="triggerSave()" placeholder="Item name"></textarea>
+     </td>
+     <td>
+      <textarea class="cell-input" [(ngModel)]="row.comments" (ngModelChange)="triggerSave()" placeholder="Details"></textarea>
+     </td>
+     <td class="text-center">
+      <button class="status-btn" [ngClass]="{'red': row.status === 0, 'amber': row.status === 1, 'green': row.status === 2}" (click)="cycleStatus(row)">
+       <span *ngIf="row.status === -1">—</span>
+      </button>
+     </td>
+     <td class="text-center">
+      <div class="traj-cell">
+       <input type="range" class="traj-slider-sm" min="0" max="2" step="0.1" [(ngModel)]="row.traj" (ngModelChange)="triggerSave()">
+       <div class="traj-number">{{ row.traj !== -1 ? (row.traj | number:'1.1-1') : '-' }}</div>
+      </div>
+     </td>
+     <td>
+      <textarea class="cell-input" [(ngModel)]="row.next" (ngModelChange)="triggerSave()" placeholder="Action item"></textarea>
+     </td>
+     <td class="actions-cell no-print">
+      <div class="row-actions">
+       <button (click)="moveRowUp(i)" [disabled]="i === 0" title="Up">�-�</button>
+       <button (click)="moveRowDown(i)" [disabled]="i === activeSnapshot.rows.length - 1" title="Down">�-�</button>
+       <button class="danger" (click)="deleteRow(row.id)" title="Remove">
+        @if (deletingRowId === row.id) {
+         Confirm?
+        } @else {
+         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+         </svg>
+        }
+       </button>
+      </div>
+      <div class="weight-wrapper">
+       <span class="wt-lbl">wt:</span>
+       <input type="number" class="wt-input" min="0" step="0.5" [(ngModel)]="row.weight" (ngModelChange)="triggerSave()">
+      </div>
+     </td>
+    </tr>
+   </tbody>
+  </table>
+  
+  <div class="empty-board" *ngIf="activeSnapshot.rows.length === 0">
+   <p>Your dashboard is empty.</p>
+   <button class="btn-primary sm" (click)="addRow()">Add First Item</button>
+  </div>
+ </div>
+
+ <!-- Footer Stats -->
+ <footer class="dashboard-footer animate-in" style="animation-delay: 0.3s;">
+  <div class="stats-group">
+   <div class="stat-pill"><span class="dot green"></span> {{ onTrackCount }} On Track</div>
+   <div class="stat-pill"><span class="dot amber"></span> {{ atRiskCount }} At Risk</div>
+   <div class="stat-pill"><span class="dot red"></span> {{ offTrackCount }} Off Track</div>
+  </div>
+  <div class="meta-stats">
+   Total Items: {{ activeSnapshot.rows.length }}
+  </div>
+ </footer>
+
+</div>
+</div>
+
+<div class="content-wrapper" *ngIf="loading">
+ <div class="loading-state">
+  <div class="spinner"></div>
+  <p>Loading dashboard...</p>
+ </div>
+</div>
+
+<div class="content-wrapper" *ngIf="!loading && loadError">
+ <div class="error-state glass-panel">
+  <p>{{ loadError }}</p>
+  <button class="btn btn-primary" (click)="goBack()">Back to Workspace</button>
+ </div>
 </div>

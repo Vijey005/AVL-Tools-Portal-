@@ -1,170 +1,180 @@
 /* ============================================================
-   AVL Organigram Creator — Seamless Dark Theme CSS
-   Fully integrated into the AVL Portal dark design system.
-   ViewEncapsulation.None — prefixed with app-organigram.
-   ============================================================ */
+  AVL Organigram Creator — Professional Light Theme
+  ============================================================ */
 
-/* ── Loading screen ─────────────────────────────────────── */
 app-organigram .org-loading-screen {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; height: calc(100vh - 64px);
-  background: transparent;
+ display: flex; flex-direction: column; align-items: center;
+ justify-content: center; height: calc(100vh - var(--header-height));
+ background: var(--bg-base);
+}
+app-organigram .error-state {
+ text-align: center;
+ padding: 32px 40px;
+ max-width: 400px;
+}
+app-organigram .error-state p {
+ margin-bottom: 16px;
+ color: var(--status-red);
 }
 app-organigram .org-loading-spinner {
-  width: 40px; height: 40px;
-  border: 3px solid rgba(255,255,255,0.08);
-  border-top-color: hsl(190, 80%, 45%);
-  border-radius: 50%;
-  animation: org-spin .8s linear infinite;
+ width: 40px; height: 40px;
+ border: 3px solid var(--border-subtle);
+ border-top-color: var(--avl-primary);
+ border-radius: 50%;
+ animation: org-spin .8s linear infinite;
+}
+app-organigram .org-loading-text {
+ margin-top: 12px;
+ font-size: 14px;
+ color: var(--text-muted);
 }
 @keyframes org-spin { to { transform: rotate(360deg); } }
 
-/* ── Host container ─────────────────────────────────────── */
 app-organigram {
-  display: block;
-  position: fixed;
-  top: 64px; /* Exactly below the global navbar */
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10;
-  background: var(--bg-base);
-  
-  /* Map app tokens to organigram-internal tokens */
-  --avl-teal:        hsl(190, 80%, 45%);
-  --avl-green:       hsl(145, 60%, 45%);
-  --avl-teal-glow:   hsla(190, 80%, 45%, 0.35);
-  --avl-gradient:    linear-gradient(135deg, hsl(190, 80%, 45%) 0%, hsl(145, 60%, 45%) 100%);
+ display: block;
+ position: fixed;
+ top: var(--header-height);
+ left: 0;
+ right: 0;
+ bottom: 0;
+ z-index: 10;
+ background: var(--bg-base);
 
-  /* Dark-theme surface colors */
-  --bg-base:         #080c10;
-  --bg-surface:      #10151c;
-  --bg-elevated:     #161c24;
-  --bg-card:         rgba(22, 28, 36, 0.8);
-  --border:          rgba(255,255,255,0.08);
-  --border-focus:    rgba(255,255,255,0.15);
-  --text:            #f0f4f8;
-  --text-muted:      #9ba3af;
-  --danger:          hsl(355, 75%, 60%);
-  --danger-soft:     hsla(355, 75%, 60%, 0.15);
+ --avl-teal:    #00A4C7;
+ --avl-green:    #028550;
+ --avl-teal-glow:  rgba(0, 164, 199, 0.25);
+ --avl-gradient:  linear-gradient(90deg, #005A99 0%, #00A4C7 55%, #01C9B2 100%);
 
-  /* Chart-specific Native Dark Theme */
-  --canvas-bg:       transparent;
-  --canvas-text:     #f0f4f8;
-  --canvas-muted:    #9ba3af;
-  --canvas-border:   rgba(255, 255, 255, 0.15);
-  
-  --pm-blue:         hsla(190, 80%, 45%, 0.12);
-  --pm-blue-dark:    hsla(190, 80%, 45%, 0.25);
-  --pm-border:       hsl(190, 80%, 45%);
-  
-  --gray-dark:       rgba(255, 255, 255, 0.04);
-  --gray-mid:        rgba(255, 255, 255, 0.08);
-  --gray-border:     rgba(255, 255, 255, 0.15);
-  
-  --team-blue:       hsla(210, 50%, 45%, 0.15);
-  --team-border:     hsl(210, 50%, 55%);
-  
-  --bottom-blue:     rgba(255, 255, 255, 0.02);
-  --bottom-blue-dk:  rgba(255, 255, 255, 0.08);
-  --line-color:      rgba(255, 255, 255, 0.2);
+ --bg-base:     #e8edf2;
+ --bg-surface:   #ffffff;
+ --bg-elevated:   #f4f7fa;
+ --bg-card:     #ffffff;
+ --border:     #cfd8e3;
+ --border-focus:  #aebdca;
+ --text:      #1a2332;
+ --text-muted:   #6b7280;
+ --muted:      #6b7280;
+ --danger:     #dc2626;
+ --danger-soft:   rgba(220, 38, 38, 0.08);
 
-  font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+ --canvas-bg:    #ffffff;
+ --canvas-text:   #1a2332;
+ --canvas-muted:  #6b7280;
+ --canvas-border:  #e2e6ea;
+
+ --pm-blue:     rgba(0, 90, 153, 0.08);
+ --pm-blue-dark:  rgba(0, 90, 153, 0.15);
+ --pm-border:    #005A99;
+
+ --gray-dark:    #f7fafc;
+ --gray-mid:    #eef3f7;
+ --gray-border:   #c6d4df;
+
+ --team-blue:    rgba(0, 164, 199, 0.08);
+ --team-border:   #00A4C7;
+
+ --bottom-blue:   #f8f9fb;
+ --bottom-blue-dk: #f0f2f5;
+ --line-color:   #c5cdd6;
+
+ font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
 }
 
 app-organigram * { box-sizing: border-box; }
 
 /* ── App shell ───────────────────────────────────────────── */
 app-organigram .app {
-  display: flex;
-  flex-direction: column;
-  height: 100%; /* Now safely 100% of the fixed host */
-  overflow: hidden;
-  background: var(--bg-base);
-  color: var(--text);
+ display: flex;
+ flex-direction: column;
+ height: 100%; /* Now safely 100% of the fixed host */
+ overflow: hidden;
+ background: var(--bg-base);
+ color: var(--text);
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TOOLBAR
+  TOOLBAR
 ═══════════════════════════════════════════════════════════ */
 app-organigram .toolbar {
-  display: flex; align-items: center; gap: 6px; padding: 0 20px;
-  height: 56px; background: rgba(13, 17, 23, 0.85);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
-  flex-wrap: nowrap; position: relative; z-index: 100; flex-shrink: 0;
+ display: flex; align-items: center; gap: 6px; padding: 0 20px;
+ height: 56px; background: var(--bg-surface);
+ border-bottom: 1px solid var(--border);
+ flex-wrap: nowrap; position: relative; z-index: 100; flex-shrink: 0;
+ box-shadow: 0 2px 10px rgba(0,56,92,.08);
 }
-app-organigram .brand { display: flex; align-items: center; gap: 10px; padding-right: 14px; margin-right: 6px; border-right: 1px solid var(--border); flex-shrink: 0; }
-app-organigram .brand-logo { width: 28px; height: 28px; background: var(--avl-gradient); border-radius: 7px; box-shadow: 0 0 14px var(--avl-teal-glow); display: flex; align-items: center; justify-content: center; font-size: 14px; }
-app-organigram .brand-name { font-weight: 700; font-size: 14px; letter-spacing: -0.02em; color: #fff; white-space: nowrap; }
-app-organigram .brand-sub { font-size: 10px; color: var(--text-muted); letter-spacing: 0.02em; }
+app-organigram .brand { display: flex; align-items: center; gap: 10px; padding-right: 14px; margin-right: 6px; border-right: 1px solid var(--border); flex-shrink: 0; min-width: 0; }
+app-organigram .brand-text { display: flex; flex-direction: column; justify-content: center; gap: 1px; line-height: 1.15; }
+app-organigram .brand-name { font-weight: 700; font-size: 13px; letter-spacing: -0.02em; color: var(--text); white-space: nowrap; }
+app-organigram .brand-sub { display: block; font-size: 10px; color: var(--text-muted); letter-spacing: 0.01em; white-space: nowrap; }
+app-organigram .dir-count { font-size: 10px; color: var(--text-muted); margin-left: 2px; }
 
 app-organigram .btn {
-  appearance: none; border: 1px solid var(--border); background: rgba(255,255,255,0.04);
-  color: var(--text-muted); padding: 6px 11px; font-size: 12px; font-weight: 500;
-  border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
-  transition: all .15s ease; font-family: 'Inter', 'Segoe UI', sans-serif; white-space: nowrap; flex-shrink: 0;
+ appearance: none; border: 1px solid var(--border); background: var(--bg-surface);
+ color: var(--text-muted); padding: 5px 10px; font-size: 12px; font-weight: 500;
+ border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+ transition: all .15s ease; font-family: 'Inter', 'Segoe UI', sans-serif; white-space: nowrap; flex-shrink: 0;
 }
-app-organigram .btn:hover { background: rgba(255,255,255,0.08); border-color: var(--border-focus); color: var(--text); }
+app-organigram .btn:hover { background: var(--bg-elevated); border-color: var(--avl-teal); color: var(--text); }
 app-organigram .btn:active { transform: scale(0.97); }
-app-organigram .btn.primary { background: var(--avl-gradient); color: #fff; border-color: transparent; font-weight: 600; box-shadow: 0 4px 12px var(--avl-teal-glow); }
-app-organigram .btn.primary:hover { filter: brightness(1.1); box-shadow: 0 6px 16px var(--avl-teal-glow); }
+app-organigram .btn.primary { background: var(--avl-primary, #005A99); color: #fff; border-color: transparent; font-weight: 600; }
+app-organigram .btn.primary:hover { background: #0070b8; }
 app-organigram .btn.danger { color: var(--danger); border-color: var(--danger-soft); background: var(--danger-soft); }
 app-organigram .btn.danger:hover { background: var(--danger); color: #fff; border-color: transparent; }
 app-organigram .btn.small { padding: 4px 8px; font-size: 11px; }
-app-organigram .btn .ico { font-size: 13px; line-height: 1; }
 
 app-organigram .toolbar .spacer { flex: 1; }
 
 app-organigram .toggle {
-  display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px;
-  border: 1px solid var(--border); border-radius: 20px;
-  cursor: pointer; font-size: 12px; font-weight: 500; background: rgba(255,255,255,0.04);
-  user-select: none; color: var(--text-muted); transition: all .2s; flex-shrink: 0;
+ display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px;
+ border: 1px solid var(--border); border-radius: 20px;
+ cursor: pointer; font-size: 12px; font-weight: 500; background: var(--bg-elevated);
+ user-select: none; color: var(--text-muted); transition: all .2s; flex-shrink: 0;
 }
-app-organigram .toggle.on { background: hsla(190, 80%, 45%, 0.15); border-color: hsla(190, 80%, 45%, 0.4); color: hsl(190, 80%, 65%); font-weight: 600; }
+app-organigram .toggle.on { background: rgba(0, 90, 153, 0.1); border-color: rgba(0, 90, 153, 0.3); color: #005A99; font-weight: 600; }
 app-organigram .toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); transition: .2s; }
-app-organigram .toggle.on .dot { background: hsl(190, 80%, 55%); box-shadow: 0 0 0 3px hsla(190, 80%, 45%, 0.25); }
+app-organigram .toggle.on .dot { background: #005A99; box-shadow: 0 0 0 3px rgba(0, 90, 153, 0.2); }
 
-/* Settings popover */
 app-organigram .settings-pop {
-  position: absolute; top: 60px; right: 20px; background: var(--bg-elevated); border: 1px solid var(--border-focus);
-  border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,0.5); padding: 16px; min-width: 340px; max-height: 80vh; overflow-y: auto; display: none; z-index: 500;
+ position: absolute; top: 56px; right: 20px; background: var(--bg-surface); border: 1px solid var(--border);
+ border-radius: 8px; box-shadow: var(--shadow-lg); padding: 16px; min-width: 340px; max-height: 80vh; overflow-y: auto; display: none; z-index: 500;
 }
+app-organigram .settings-hint { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-top: 6px; }
 app-organigram .settings-pop.open { display: block; }
 app-organigram .settings-pop h4 { margin: 12px 0 6px; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
 app-organigram .settings-pop h4:first-child { margin-top: 0; }
 app-organigram .settings-pop label { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 0; cursor: pointer; color: var(--text); }
 app-organigram .settings-pop input[type="checkbox"] { accent-color: hsl(190, 80%, 45%); }
 app-organigram .settings-pop hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
-app-organigram .zone-group { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+app-organigram .zone-group { background: #f8f9fb; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
 app-organigram .zone-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 app-organigram .zone-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
 app-organigram .zone-checks label { font-size: 12px; padding: 2px 0; color: var(--text-muted); }
 
 /* ═══════════════════════════════════════════════════════════
-   CANVAS WRAP — maximized dark responsive container
+  CANVAS WRAP — maximized dark responsive container
 ═══════════════════════════════════════════════════════════ */
 app-organigram .canvas-wrap {
-  flex: 1; overflow: auto;
-  background: radial-gradient(circle at 20% 30%, hsla(190,80%,45%,0.04), transparent 50%), radial-gradient(circle at 80% 70%, hsla(145,60%,45%,0.03), transparent 50%), #080c10;
-  padding: 24px;
+ flex: 1; overflow: auto;
+ background: #dfe7ef;
+ padding: 24px;
 }
 app-organigram .canvas-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
-app-organigram .canvas-wrap::-webkit-scrollbar-track { background: #080c10; }
-app-organigram .canvas-wrap::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 5px; }
-app-organigram .canvas-wrap::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+app-organigram .canvas-wrap::-webkit-scrollbar-track { background: #dfe7ef; }
+app-organigram .canvas-wrap::-webkit-scrollbar-thumb { background: #aebdca; border-radius: 5px; }
+app-organigram .canvas-wrap::-webkit-scrollbar-thumb:hover { background: #8ea0b3; }
 
 /* ── The integrated dark canvas ─────────────── */
 app-organigram .canvas {
-  background: var(--canvas-bg);
-  width: 100%; min-width: min-content; /* allows tree to define natural width without rigid cuts */
-  min-height: 100%; margin: 0; padding: 32px 32px 64px;
-  position: relative; outline: none;
+ background: var(--canvas-bg);
+ width: 100%; min-width: min-content; /* allows tree to define natural width without rigid cuts */
+ min-height: 100%; margin: 0; padding: 32px 32px 64px;
+ position: relative; outline: none;
+ border: 1px solid #c6d4df;
+ box-shadow: 0 12px 30px rgba(0,56,92,.16);
 }
 
 /* Title */
-app-organigram .org-title    { font-size: 32px; font-weight: 700; line-height: 1.1; margin: 0; color: var(--canvas-text); font-family: 'Inter', 'Segoe UI', sans-serif; }
+app-organigram .org-title  { font-size: 32px; font-weight: 700; line-height: 1.1; margin: 0; color: var(--canvas-text); font-family: 'Inter', 'Segoe UI', sans-serif; }
 app-organigram .org-subtitle { font-size: 22px; font-weight: 700; font-style: italic; margin: 4px 0 0; color: var(--canvas-text); font-family: 'Inter', 'Segoe UI', sans-serif; }
 app-organigram .title-underline { width: 220px; height: 5px; border-radius: 2px; background: var(--avl-gradient); margin: 10px 0 36px; }
 
@@ -172,74 +182,74 @@ app-organigram .title-underline { width: 220px; height: 5px; border-radius: 2px;
 app-organigram .chart-body { display: grid; grid-template-columns: 240px 1fr; gap: 40px; position: relative; }
 
 /* ── SVG lines ───────────────────────────────────────────── */
-app-organigram .tree-area  { position: relative; min-height: 520px; }
-app-organigram .lines-svg  { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: visible; }
+app-organigram .tree-area { position: relative; min-height: 520px; }
+app-organigram .lines-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: visible; }
 app-organigram .lines-svg path { fill: none; stroke: var(--line-color); stroke-width: 1.5; }
 app-organigram .lines-svg path.dashed { stroke-dasharray: 6 5; }
 
 /* ── Side roles ──────────────────────────────────────────── */
 app-organigram .side-roles { display: flex; flex-direction: column; gap: 14px; padding-top: 30px; }
-app-organigram .side-role  { background: var(--gray-dark); color: var(--canvas-text); border: 1px solid var(--gray-border); padding: 12px 14px; border-radius: 8px; text-align: center; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+app-organigram .side-role { background: var(--gray-dark); color: var(--canvas-text); border: 1px solid var(--gray-border); padding: 12px 14px; border-radius: 8px; text-align: center; position: relative; box-shadow: 0 4px 12px rgba(0,56,92,.1); }
 app-organigram .side-role .name { font-size: 14px; font-weight: 600; }
 app-organigram .side-role .role { font-size: 11px; color: var(--canvas-muted); margin-top: 2px; }
 
 /* ── Rows ────────────────────────────────────────────────── */
-app-organigram .row          { display: flex; justify-content: center; gap: 28px; position: relative; z-index: 1; }
-app-organigram .row.row-top  { margin-bottom: 36px; }
-app-organigram .row.row-wp   { margin-bottom: 16px; align-items: stretch; }
+app-organigram .row     { display: flex; justify-content: center; gap: 28px; position: relative; z-index: 1; }
+app-organigram .row.row-top { margin-bottom: 36px; }
+app-organigram .row.row-wp  { margin-bottom: 16px; align-items: stretch; }
 app-organigram .row.row-team { margin-bottom: 0; align-items: flex-start; }
 
 /* ── Coordinator section ─────────────────────────────────── */
 app-organigram .coord-section { display: flex; justify-content: space-between; margin-bottom: 36px; gap: 16px; position: relative; z-index: 1; }
-app-organigram .coord-col     { display: flex; flex-direction: column; gap: 16px; width: 45%; }
-app-organigram .coord-col.left  { align-items: flex-end; }
+app-organigram .coord-col   { display: flex; flex-direction: column; gap: 16px; width: 45%; }
+app-organigram .coord-col.left { align-items: flex-end; }
 app-organigram .coord-col.right { align-items: flex-start; }
 
 /* ── Cards (Dark Glassmorphism) ──────────────────────────── */
 app-organigram .card {
-  position: relative; border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,.3); min-width: 180px; z-index: 2;
-  background: var(--bg-surface);
+ position: relative; border-radius: 8px;
+ box-shadow: 0 6px 16px rgba(0,56,92,.12); min-width: 180px; z-index: 2;
+ background: var(--bg-surface);
 }
 app-organigram .card .header-bar {
-  padding: 12px 16px; color: #fff; font-size: 13px; font-weight: 600;
-  border-radius: 8px 8px 0 0; text-align: center; font-family: 'Inter', 'Segoe UI', sans-serif;
-  letter-spacing: 0.02em;
+ padding: 12px 16px; color: #fff; font-size: 13px; font-weight: 600;
+ border-radius: 8px 8px 0 0; text-align: center; font-family: 'Inter', 'Segoe UI', sans-serif;
+ letter-spacing: 0.02em;
 }
 app-organigram .card .name-bar {
-  background: rgba(0,0,0,0.15); padding: 10px 14px; font-size: 13px;
-  border-radius: 0 0 8px 8px; text-align: center; font-family: 'Inter', 'Segoe UI', sans-serif;
+ background: #ffffff; padding: 10px 14px; font-size: 13px;
+ border-radius: 0 0 8px 8px; text-align: center; font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
-app-organigram .pm-card { box-shadow: 0 8px 24px hsla(190,80%,45%,.15); }
-app-organigram .pm-card .header-bar { background: var(--pm-blue-dark); border: 1px solid var(--pm-border); border-bottom: none; min-width: 260px; color: #fff; }
-app-organigram .pm-card .name-bar   { border: 1px solid var(--pm-border); border-top: none; }
+app-organigram .pm-card { box-shadow: 0 8px 24px rgba(0,90,153,.16); }
+app-organigram .pm-card .header-bar { background: var(--pm-border); border: 1px solid var(--pm-border); border-bottom: none; min-width: 260px; color: #fff; }
+app-organigram .pm-card .name-bar  { border: 1px solid var(--pm-border); border-top: none; }
 
-app-organigram .coord-card             { min-width: 250px; }
+app-organigram .coord-card       { min-width: 250px; }
 app-organigram .coord-card .header-bar { background: var(--gray-mid); border: 1px solid var(--gray-border); border-bottom: none; color: var(--canvas-text); }
-app-organigram .coord-card .name-bar   { border: 1px solid var(--gray-border); border-top: none; }
+app-organigram .coord-card .name-bar  { border: 1px solid var(--gray-border); border-top: none; }
 app-organigram .coord-card .name-bar.with-contact { text-align: left; padding: 10px 12px; }
 
-app-organigram .wp-card             { flex: 1; max-width: 300px; min-width: 220px; }
+app-organigram .wp-card       { flex: 1; max-width: 300px; min-width: 220px; }
 app-organigram .wp-card .header-bar { background: var(--gray-mid); border: 1px solid var(--gray-border); border-bottom: none; color: var(--canvas-text); text-align: left; padding-left: 20px; clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%); padding-right: 30px; }
-app-organigram .wp-card .name-bar   { border: 1px solid var(--gray-border); border-top: none; border-bottom: none; border-radius: 0; padding: 8px 12px; font-size: 12px; text-align: left; }
-app-organigram .wp-card .members-section { background: rgba(0,0,0,0.2); border: 1px solid var(--gray-border); border-top: 1px dashed rgba(255,255,255,0.1); padding: 6px 12px 8px; font-size: 11px; border-radius: 0 0 8px 8px; }
+app-organigram .wp-card .name-bar  { border: 1px solid var(--gray-border); border-top: none; border-bottom: none; border-radius: 0; padding: 8px 12px; font-size: 12px; text-align: left; }
+app-organigram .wp-card .members-section { background: #f7fafc; border: 1px solid var(--gray-border); border-top: 1px dashed #c6d4df; padding: 6px 12px 8px; font-size: 11px; border-radius: 0 0 8px 8px; }
 app-organigram .wp-card .members-section .members-title { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--canvas-muted); margin: 2px 0 4px; font-weight: 600; }
 app-organigram .wp-card .members-section.empty { border-top: none; padding: 0 12px; }
 app-organigram .wp-card .members-section.empty .members-list { display: none; }
 app-organigram .wp-card .name-bar:last-child { border-bottom: 1px solid var(--gray-border); border-radius: 0 0 8px 8px; }
 
-app-organigram .team-block   { flex: 1; max-width: 240px; display: flex; flex-direction: column; align-items: stretch; position: relative; }
-app-organigram .team-label   { background: var(--team-blue); border: 1px solid var(--team-border); color: var(--canvas-text); padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; min-height: 44px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
-app-organigram .team-members { margin-top: 10px; background: rgba(0,0,0,0.15); border: 1px solid var(--gray-border); border-radius: 6px; padding: 8px 12px; font-size: 11px; }
+app-organigram .team-block  { flex: 1; max-width: 240px; display: flex; flex-direction: column; align-items: stretch; position: relative; }
+app-organigram .team-label  { background: var(--team-blue); border: 1px solid var(--team-border); color: var(--canvas-text); padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; min-height: 44px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,56,92,.1); }
+app-organigram .team-members { margin-top: 10px; background: #f7fafc; border: 1px solid var(--gray-border); border-radius: 6px; padding: 8px 12px; font-size: 11px; }
 app-organigram .team-members:empty { display: none; }
 
 /* ── Person rows ─────────────────────────────────────────── */
-app-organigram .person-row     { display: flex; align-items: flex-start; gap: 10px; padding: 4px 0; text-align: left; position: relative; }
-app-organigram .person-info   { flex: 1; min-width: 0; line-height: 1.4; }
-app-organigram .person-name   { font-weight: 600; color: var(--canvas-text); font-family: 'Inter', 'Segoe UI', sans-serif; }
-app-organigram .person-post   { font-size: 11px; color: var(--canvas-muted); font-style: italic; padding: 2px 0; }
-app-organigram .contact-line  { font-size: 11px; color: #818b96; display: flex; align-items: center; gap: 6px; padding: 1px 0; }
+app-organigram .person-row   { display: flex; align-items: flex-start; gap: 10px; padding: 4px 0; text-align: left; position: relative; }
+app-organigram .person-info  { flex: 1; min-width: 0; line-height: 1.4; }
+app-organigram .person-name  { font-weight: 600; color: var(--canvas-text); font-family: 'Inter', 'Segoe UI', sans-serif; }
+app-organigram .person-post  { font-size: 11px; color: var(--canvas-muted); font-style: italic; padding: 2px 0; }
+app-organigram .contact-line { font-size: 11px; color: #818b96; display: flex; align-items: center; gap: 6px; padding: 1px 0; }
 app-organigram .contact-line .ico { font-size: 11px; flex-shrink: 0; opacity: .7; width: 14px; text-align: center; }
 app-organigram .contact-line .ct-text { flex: 1; min-width: 0; word-break: break-word; }
 app-organigram .row-del { display: none; width: 18px; height: 18px; border: none; background: transparent; color: var(--danger); cursor: pointer; font-size: 14px; line-height: 1; padding: 0; align-self: flex-start; margin-top: 2px; }
@@ -248,10 +258,10 @@ app-organigram .name-bar:not(.with-contact) .person-row { justify-content: cente
 app-organigram .name-bar:not(.with-contact) .person-row .person-info { flex: 0 1 auto; }
 
 /* ── Avatars ─────────────────────────────────────────────── */
-app-organigram .avatar        { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) center/cover no-repeat; display: flex; align-items: center; justify-content: center; color: var(--canvas-text); font-size: 14px; font-weight: 700; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 2px 6px rgba(0,0,0,.25); position: relative; overflow: hidden; user-select: none; cursor: default; }
-app-organigram .avatar.small  { width: 28px; height: 28px; font-size: 11px; border-width: 1px; }
-app-organigram .avatar.tiny   { width: 24px; height: 24px; font-size: 10px; border-width: 1px; }
-app-organigram .avatar.large  { width: 68px; height: 68px; font-size: 24px; }
+app-organigram .avatar    { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) center/cover no-repeat; display: flex; align-items: center; justify-content: center; color: var(--canvas-text); font-size: 14px; font-weight: 700; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 2px 6px rgba(0,0,0,.25); position: relative; overflow: hidden; user-select: none; cursor: default; }
+app-organigram .avatar.small { width: 28px; height: 28px; font-size: 11px; border-width: 1px; }
+app-organigram .avatar.tiny  { width: 24px; height: 24px; font-size: 10px; border-width: 1px; }
+app-organigram .avatar.large { width: 68px; height: 68px; font-size: 24px; }
 app-organigram .avatar.has-photo { color: transparent; }
 app-organigram .app.edit-mode .avatar { cursor: pointer; }
 app-organigram .app.edit-mode .avatar:hover::after { content: '📷'; position: absolute; inset: 0; background: rgba(0,0,0,.65); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; }
@@ -265,15 +275,26 @@ app-organigram [contenteditable="true"]:empty:before { content: attr(data-placeh
 /* ── Card actions ────────────────────────────────────────── */
 app-organigram .card-actions { display: none; position: absolute; top: -12px; right: 12px; gap: 6px; z-index: 5; }
 app-organigram .app.edit-mode .card-actions { display: inline-flex; }
-app-organigram .pill { background: #161c24; border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 2px 10px; font-size: 11px; color: var(--canvas-text); cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.4); line-height: 1.6; user-select: none; }
-app-organigram .pill:hover  { color: hsl(190,80%,65%); border-color: hsl(190,80%,45%); }
-app-organigram .pill.active { color: hsl(190,80%,65%); border-color: hsl(190,80%,45%); font-weight: 600; background: hsla(190,80%,45%,0.1); }
+app-organigram .pill {
+  background: #ffffff;
+  border: 1px solid #aebdca;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11px;
+  color: #1a2332;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 56, 92, 0.08);
+  line-height: 1.6;
+  user-select: none;
+}
+app-organigram .pill:hover { color: #005A99; border-color: #00A4C7; background: #f4f9fc; }
+app-organigram .pill.active { color: #005A99; border-color: #005A99; font-weight: 600; background: rgba(0, 90, 153, 0.08); }
 app-organigram .del-btn { display: none; position: absolute; top: -10px; left: -10px; width: 24px; height: 24px; background: var(--danger); color: #fff; border: 2px solid var(--bg-surface); border-radius: 50%; cursor: pointer; font-size: 14px; line-height: 1; align-items: center; justify-content: center; z-index: 6; padding: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
 app-organigram .app.edit-mode .del-btn { display: inline-flex; }
 
 /* ── Bottom roles ────────────────────────────────────────── */
 app-organigram .bottom-roles { margin-top: 60px; border-top: 1px solid var(--canvas-border); padding-top: 24px; }
-app-organigram .bottom-role  { background: var(--bottom-blue); border: 1px solid var(--bottom-blue-dk); padding: 12px 18px; margin-bottom: 8px; border-radius: 6px; font-size: 14px; display: flex; align-items: center; gap: 10px; position: relative; color: var(--canvas-text); font-family: 'Inter', 'Segoe UI', sans-serif; }
+app-organigram .bottom-role { background: var(--bottom-blue); border: 1px solid var(--bottom-blue-dk); padding: 12px 18px; margin-bottom: 8px; border-radius: 6px; font-size: 14px; display: flex; align-items: center; gap: 10px; position: relative; color: var(--canvas-text); font-family: 'Inter', 'Segoe UI', sans-serif; }
 app-organigram .bottom-role .role-label { font-weight: 700; }
 
 /* ── Add buttons ─────────────────────────────────────────── */
@@ -281,17 +302,17 @@ app-organigram .add-row { display: none; justify-content: center; margin: 12px 0
 app-organigram .app.edit-mode .add-row { display: flex; }
 app-organigram .add-inline { background: hsla(190,80%,45%,.1); border: 1px dashed hsl(190,80%,45%); color: hsl(190,80%,65%); padding: 8px 16px; font-size: 12px; border-radius: 999px; cursor: pointer; font-weight: 600; letter-spacing: .3px; font-family: 'Inter', 'Segoe UI', sans-serif; transition: all .2s; }
 app-organigram .add-inline:hover { background: hsla(190,80%,45%,.2); color: #fff; }
-app-organigram .add-inline.dir  { background: hsla(145,60%,45%,.1); border-color: hsl(145,60%,45%); color: hsl(145,60%,60%); }
+app-organigram .add-inline.dir { background: hsla(145,60%,45%,.1); border-color: hsl(145,60%,45%); color: hsl(145,60%,60%); }
 app-organigram .add-inline.dir:hover { background: hsla(145,60%,45%,.2); color: #fff; }
 app-organigram .add-inrow-group { display: none; gap: 6px; justify-content: center; margin: 6px 0 2px; }
 app-organigram .app.edit-mode .add-inrow-group { display: flex; }
-app-organigram .add-inrow       { background: transparent; border: 1px dashed rgba(255,255,255,.2); color: var(--canvas-muted); padding: 4px 10px; font-size: 11px; border-radius: 999px; cursor: pointer; font-family: 'Inter', 'Segoe UI', sans-serif; transition: all .2s; }
+app-organigram .add-inrow    { background: transparent; border: 1px dashed rgba(255,255,255,.2); color: var(--canvas-muted); padding: 4px 10px; font-size: 11px; border-radius: 999px; cursor: pointer; font-family: 'Inter', 'Segoe UI', sans-serif; transition: all .2s; }
 app-organigram .add-inrow:hover { color: hsl(190,80%,65%); border-color: hsl(190,80%,45%); }
-app-organigram .add-inrow.dir   { border-color: hsl(145,60%,40%); color: hsl(145,60%,50%); }
+app-organigram .add-inrow.dir  { border-color: hsl(145,60%,40%); color: hsl(145,60%,50%); }
 app-organigram .add-inrow.dir:hover { background: hsla(145,60%,45%,.1); border-color: hsl(145,60%,50%); color: hsl(145,60%,60%); }
 
 /* ═══════════════════════════════════════════════════════════
-   MODAL  — dark glass panel
+  MODAL — dark glass panel
 ═══════════════════════════════════════════════════════════ */
 app-organigram .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
 app-organigram .modal-backdrop.open { display: flex; }
@@ -302,34 +323,34 @@ app-organigram .modal-title .ico { font-size: 18px; }
 app-organigram .modal-title .count-badge { font-size: 11px; color: var(--text-muted); font-weight: 400; }
 app-organigram .modal-close { background: transparent; border: none; cursor: pointer; width: 30px; height: 30px; border-radius: 8px; font-size: 18px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: all .15s; }
 app-organigram .modal-close:hover { background: rgba(255,255,255,0.06); color: var(--text); }
-app-organigram .modal-body   { flex: 1; overflow-y: auto; padding: 16px 20px; }
-app-organigram .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; align-items: center; background: rgba(0,0,0,0.2); border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
+app-organigram .modal-body  { flex: 1; overflow-y: auto; padding: 16px 20px; }
+app-organigram .modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; align-items: center; background: var(--bg-elevated); border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; }
 app-organigram .modal-body::-webkit-scrollbar { width: 6px; }
 app-organigram .modal-body::-webkit-scrollbar-track { background: transparent; }
 app-organigram .modal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
 
 /* Directory search toolbar */
 app-organigram .dir-toolbar { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; }
-app-organigram .dir-search  { flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text); font-family: 'Inter', 'Segoe UI', sans-serif; }
+app-organigram .dir-search { flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text); font-family: 'Inter', 'Segoe UI', sans-serif; }
 app-organigram .dir-search::placeholder { color: var(--text-muted); }
 app-organigram .dir-search:focus { outline: none; border-color: hsl(190,80%,45%); box-shadow: 0 0 0 3px hsla(190,80%,45%,.15); }
-app-organigram .dir-list    { display: flex; flex-direction: column; gap: 6px; min-height: 60px; }
-app-organigram .dir-entry   { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.03); transition: all .15s; }
+app-organigram .dir-list  { display: flex; flex-direction: column; gap: 6px; min-height: 60px; }
+app-organigram .dir-entry  { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.03); transition: all .15s; }
 app-organigram .dir-entry.clickable { cursor: pointer; }
 app-organigram .dir-entry.clickable:hover { background: hsla(190,80%,45%,.08); border-color: hsla(190,80%,45%,.4); box-shadow: 0 0 0 1px hsla(190,80%,45%,.3); }
-app-organigram .dir-entry-info    { flex: 1; min-width: 0; line-height: 1.4; }
-app-organigram .dir-entry-name    { font-weight: 600; font-size: 14px; color: var(--text); font-family: 'Inter', 'Segoe UI', sans-serif; }
-app-organigram .dir-entry-post    { font-size: 11px; color: var(--text-muted); font-style: italic; }
+app-organigram .dir-entry-info  { flex: 1; min-width: 0; line-height: 1.4; }
+app-organigram .dir-entry-name  { font-weight: 600; font-size: 14px; color: var(--text); font-family: 'Inter', 'Segoe UI', sans-serif; }
+app-organigram .dir-entry-post  { font-size: 11px; color: var(--text-muted); font-style: italic; }
 app-organigram .dir-entry-contact { font-size: 11px; color: var(--text-muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 app-organigram .dir-entry-actions { display: flex; gap: 4px; flex-shrink: 0; }
-app-organigram .dir-empty  { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; }
+app-organigram .dir-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; }
 app-organigram .dir-empty .ico-big { font-size: 36px; margin-bottom: 8px; opacity: .4; }
 
 /* Entry editor */
 app-organigram .dir-editor { display: flex; gap: 20px; padding: 8px 0; }
 app-organigram .editor-photo-col { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 app-organigram .editor-photo-col .small-link { font-size: 11px; color: hsl(190,80%,55%); cursor: pointer; }
-app-organigram .editor-fields    { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+app-organigram .editor-fields  { flex: 1; display: flex; flex-direction: column; gap: 12px; }
 app-organigram .field { display: flex; flex-direction: column; }
 app-organigram .field-label { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
 app-organigram .editor-fields input { padding: 9px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 7px; font-size: 13px; font-family: 'Inter', 'Segoe UI', sans-serif; color: var(--text); }
@@ -338,36 +359,36 @@ app-organigram .editor-fields input:focus { outline: none; border-color: hsl(190
 
 /* ── Status toast ────────────────────────────────────────── */
 app-organigram .status { position: fixed; bottom: 24px; right: 24px; background: var(--bg-elevated); border: 1px solid var(--border-focus); color: var(--text); padding: 10px 18px; border-radius: 10px; font-size: 13px; box-shadow: 0 8px 24px rgba(0,0,0,.4); opacity: 0; transform: translateY(10px); transition: opacity .25s, transform .25s; pointer-events: none; z-index: 9999; font-family: 'Inter', 'Segoe UI', sans-serif; }
-app-organigram .status.show    { opacity: 1; transform: translateY(0); }
-app-organigram .status.error   { background: hsla(355,75%,60%,.15); border-color: hsla(355,75%,60%,.4); color: hsl(355,75%,70%); }
+app-organigram .status.show  { opacity: 1; transform: translateY(0); }
+app-organigram .status.error  { background: hsla(355,75%,60%,.15); border-color: hsla(355,75%,60%,.4); color: hsl(355,75%,70%); }
 app-organigram .status.success { background: hsla(145,60%,45%,.15); border-color: hsla(145,60%,45%,.4); color: hsl(145,60%,60%); }
-app-organigram .status.info    { background: hsla(190,80%,45%,.12); border-color: hsla(190,80%,45%,.35); color: hsl(190,80%,65%); }
+app-organigram .status.info  { background: hsla(190,80%,45%,.12); border-color: hsla(190,80%,45%,.35); color: hsl(190,80%,65%); }
 
 /* ══════════════════════════════════════════════════════════
-   PRINT (Overrides dark theme so output is clean white)
+  PRINT (Overrides dark theme so output is clean white)
 ══════════════════════════════════════════════════════════ */
 @media print {
-  @page { size: A3 landscape; margin: 10mm; }
-  app-organigram {
-    --canvas-bg: #fff !important;
-    --canvas-text: #000 !important;
-    --canvas-muted: #555 !important;
-    --canvas-border: #ccc !important;
-    --line-color: #333 !important;
-    --gray-dark: #fff !important;
-    --gray-border: #ccc !important;
-    --pm-blue-dark: #e6f2ff !important;
-    --pm-border: #99c2ff !important;
-    --gray-mid: #f5f5f5 !important;
-    --team-blue: #f0f7f9 !important;
-    --team-border: #bce2ee !important;
-    --bg-surface: #fff !important;
-  }
-  app-organigram .toolbar, app-organigram .add-row, app-organigram .add-inrow-group, app-organigram .del-btn, app-organigram .row-del, app-organigram .card-actions, app-organigram .status, app-organigram .modal-backdrop { display: none !important; }
-  app-organigram .canvas-wrap { padding: 0 !important; overflow: visible !important; background: none !important; }
-  app-organigram .canvas { width: 100% !important; min-width: auto !important; box-shadow: none !important; padding: 0 !important; background: #fff !important; }
-  app-organigram .app { display: block !important; height: auto !important; background: #fff !important; }
-  app-organigram .app.edit-mode .avatar:hover::after { display: none !important; }
-  app-organigram .card .name-bar, app-organigram .wp-card .members-section, app-organigram .team-members { background: #fff !important; color: #000 !important; }
-  app-organigram .pm-card .header-bar, app-organigram .coord-card .header-bar, app-organigram .wp-card .header-bar { color: #000 !important; }
+ @page { size: A3 landscape; margin: 10mm; }
+ app-organigram {
+  --canvas-bg: #fff !important;
+  --canvas-text: #000 !important;
+  --canvas-muted: #555 !important;
+  --canvas-border: #ccc !important;
+  --line-color: #333 !important;
+  --gray-dark: #fff !important;
+  --gray-border: #ccc !important;
+  --pm-blue-dark: #e6f2ff !important;
+  --pm-border: #99c2ff !important;
+  --gray-mid: #f5f5f5 !important;
+  --team-blue: #f0f7f9 !important;
+  --team-border: #bce2ee !important;
+  --bg-surface: #fff !important;
+ }
+ app-organigram .toolbar, app-organigram .add-row, app-organigram .add-inrow-group, app-organigram .del-btn, app-organigram .row-del, app-organigram .card-actions, app-organigram .status, app-organigram .modal-backdrop { display: none !important; }
+ app-organigram .canvas-wrap { padding: 0 !important; overflow: visible !important; background: none !important; }
+ app-organigram .canvas { width: 100% !important; min-width: auto !important; box-shadow: none !important; padding: 0 !important; background: #fff !important; }
+ app-organigram .app { display: block !important; height: auto !important; background: #fff !important; }
+ app-organigram .app.edit-mode .avatar:hover::after { display: none !important; }
+ app-organigram .card .name-bar, app-organigram .wp-card .members-section, app-organigram .team-members { background: #fff !important; color: #000 !important; }
+ app-organigram .pm-card .header-bar, app-organigram .coord-card .header-bar, app-organigram .wp-card .header-bar { color: #000 !important; }
 }

@@ -30,6 +30,7 @@ export class OrganigramComponent implements OnInit, AfterViewInit, OnDestroy {
 
   fileId!: number;
   loading = true;
+  loadError = '';
   private initialPayload: string | null = null;
   private destroy$ = new Subject<void>();
   private saveSubject = new Subject<void>();
@@ -55,7 +56,8 @@ export class OrganigramComponent implements OnInit, AfterViewInit, OnDestroy {
           setTimeout(() => this.bootOrgApp(file.json_payload), 0)
         );
       },
-      error: () => {
+      error: (err) => {
+        this.loadError = err.error?.detail || 'Failed to load organigram.';
         this.loading = false;
         this.cdr.detectChanges();
         this.zone.runOutsideAngular(() =>
@@ -832,10 +834,9 @@ export class OrganigramComponent implements OnInit, AfterViewInit, OnDestroy {
           if (Array.isArray(data)) entries = data;
           else if (data && Array.isArray(data.entries)) entries = data.entries;
           else { showStatus('Unrecognized directory format', 'error'); return; }
-          const mode = confirm(`Import ${entries.length} entries.\n\nOK = MERGE\nCancel = REPLACE`) ? 'merge' : 'replace';
           const normalized = entries.map((e: any) => ({ id: genId(), name: e.name || '', post: e.post || '', email: e.email || '', phone: e.phone || '', photo: e.photo || '' })).filter((e: any) => e.name);
-          if (mode === 'replace') directory = normalized; else directory = directory.concat(normalized);
-          saveDirectory(); showStatus(`${mode === 'merge' ? 'Merged' : 'Imported'} ${normalized.length} entries`, 'success');
+          directory = directory.concat(normalized);
+          saveDirectory(); showStatus(`Merged ${normalized.length} entries`, 'success');
           openDirectoryManager();
         } catch { showStatus('Invalid JSON file', 'error'); }
       };
