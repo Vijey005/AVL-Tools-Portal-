@@ -39,7 +39,15 @@ export class LoginComponent {
    : this.authService.register(this.formData);
 
   obs$.subscribe({
-   next: () => this.router.navigate(['/hub']),
+   next: (res: any) => {
+     if (this.isLoginMode) {
+       this.router.navigate(['/hub']);
+     } else {
+       // Registration returns a message instead of token
+       alert(res.message || 'Registration successful. Please wait for an admin to approve your account.');
+       this.isLoginMode = true; // Switch back to login
+     }
+   },
    error: (err) => {
     this.errorMsg = err.error?.detail || 'An error occurred during authentication.';
    }

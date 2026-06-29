@@ -35,13 +35,17 @@ export class ApiService {
   return this.http.delete<any>(`${this.apiUrl}/files/${id}`);
  }
 
- shareFile(id: number, targetEmail: string): Observable<any> {
-  return this.http.post<any>(`${this.apiUrl}/files/${id}/share`, { target_email: targetEmail });
+ shareFile(fileId: number, targetEmail: string, shareType: 'duplicate' | 'original' = 'duplicate') {
+  return this.http.post<any>(`${this.apiUrl}/files/${fileId}/share`, { target_email: targetEmail, share_type: shareType });
  }
 
  // --- Admin API ---
  getUsers(): Observable<any[]> {
   return this.http.get<any[]>(`${this.apiUrl}/admin/users`);
+ }
+
+ searchUsers(query: string): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/users/search?q=${encodeURIComponent(query)}`);
  }
 
  updateUser(id: number, data: any): Observable<any> {

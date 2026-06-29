@@ -21,7 +21,9 @@ def list_my_files(
     current_user: User = Depends(get_current_user),
 ):
     """List all files owned by the current user, optionally filtered by tool type."""
-    query = db.query(File).filter(File.owner_id == current_user.id)
+    query = db.query(File).filter(
+        (File.owner_id == current_user.id) | (File.shared_with_users.any(id=current_user.id))
+    )
     if tool_type:
         query = query.filter(File.tool_type == tool_type)
     return query.order_by(File.updated_at.desc()).all()
@@ -59,7 +61,7 @@ def get_file(
     file = db.query(File).filter(File.id == file_id).first()
     if not file:
         raise HTTPException(status_code=404, detail="File not found")
-    if file.owner_id != current_user.id:
+    if file.owner_id != current_user.id and current_user not in file.shared_with_users:
         raise HTTPException(status_code=403, detail="Access denied")
     return file
 
@@ -75,10 +77,12 @@ def update_file(
     file = db.query(File).filter(File.id == file_id).first()
     if not file:
         raise HTTPException(status_code=404, detail="File not found")
-    if file.owner_id != current_user.id:
+    if file.owner_id != current_user.id and current_user not in file.shared_with_users:
         raise HTTPException(status_code=403, detail="Access denied")
 
-    if body.name is not None:
+    if body.name is not None and body.name != file.name:
+        if file.owner_id != current_user.id:
+            raise HTTPException(status_code=403, detail="You cannot rename a file shared with you")
         file.name = body.name
     if body.json_payload is not None:
         file.json_payload = body.json_payload
@@ -98,11 +102,14 @@ def delete_file(
     file = db.query(File).filter(File.id == file_id).first()
     if not file:
         raise HTTPException(status_code=404, detail="File not found")
-    if file.owner_id != current_user.id:
+    if file.owner_id == current_user.id:
+        db.delete(file)
+        db.commit()
+    elif current_user in file.shared_with_users:
+        file.shared_with_users.remove(current_user)
+        db.commit()
+    else:
         raise HTTPException(status_code=403, detail="Access denied")
-
-    db.delete(file)
-    db.commit()
 
 
 @router.post("/{file_id}/share", status_code=status.HTTP_201_CREATED)
@@ -137,16 +144,22 @@ def share_file(
     if recipient.id == current_user.id:
         raise HTTPException(status_code=400, detail="You cannot share a file with yourself")
 
-    # 3. Create a complete duplicate
-    cloned_file = File(
-        owner_id=recipient.id,
-        tool_type=source_file.tool_type,
-        name=f"{source_file.name} (Shared)",
-        json_payload=source_file.json_payload,
-        shared_by_user_id=current_user.id,
-    )
-    db.add(cloned_file)
-    db.commit()
-    db.refresh(cloned_file)
-
-    return {"message": "File shared successfully"}
+    if body.share_type == "original":
+        if recipient not in source_file.shared_with_users:
+            source_file.shared_with_users.append(recipient)
+            db.commit()
+        return {"message": "Original file shared successfully"}
+    else:
+        # 3. Create a complete duplicate
+        cloned_file = File(
+            owner_id=recipient.id,
+            tool_type=source_file.tool_type,
+            name=f"{source_file.name} (Shared)",
+            json_payload=source_file.json_payload,
+            shared_by_user_id=current_user.id,
+        )
+        db.add(cloned_file)
+        db.commit()
+        db.refresh(cloned_file)
+    
+        return {"message": "File clone shared successfully"}

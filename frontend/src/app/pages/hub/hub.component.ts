@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { ShareModalComponent } from '../../shared/share-modal/share-modal.component';
 
 function currentWeek(): string {
@@ -33,7 +34,7 @@ export class HubComponent implements OnInit {
  selectedFileId: number | null = null;
  deletingFileId: number | null = null;
 
- constructor(private api: ApiService, private router: Router) {}
+ constructor(private api: ApiService, private authService: AuthService, private router: Router) {}
 
  ngOnInit() {
   this.loadFiles();
@@ -45,8 +46,18 @@ export class HubComponent implements OnInit {
   this.api.getFiles(this.selectedToolType || undefined).subscribe({
    next: files => {
     this.files = files;
-    this.myProjects = files.filter(f => !f.shared_by_user_id);
-    this.sharedWithMe = files.filter(f => f.shared_by_user_id);
+    
+    // Retrieve current user ID from AuthService
+    let currentUserId: number | undefined;
+    this.authService.currentUser$.subscribe(user => {
+     if (user) {
+      currentUserId = user.id;
+      // Categorize strictly based on owner_id vs current_user_id
+      this.myProjects = files.filter(f => f.owner_id === currentUserId);
+      this.sharedWithMe = files.filter(f => f.owner_id !== currentUserId);
+     }
+    });
+
     this.loading = false;
    },
    error: err => {
@@ -67,14 +78,23 @@ export class HubComponent implements OnInit {
 
  createNew(toolType: string) {
   this.createError = '';
+  const defaultName = `Untitled ${this.getToolName(toolType)}`;
+  const projectName = window.prompt(`Enter a name for your new ${this.getToolName(toolType)}:`, defaultName);
+  
+  if (projectName === null) {
+      return; // user cancelled
+  }
+
+  const finalName = projectName.trim() || defaultName;
+
   const week = currentWeek();
   const defaultPayloads: Record<string, string> = {
-   lmm: JSON.stringify({ tasks: [], resources: [], projectName: 'New Project' }),
-   organigram: JSON.stringify({ title: 'New Organigram', nodes: [] }),
+   lmm: JSON.stringify({ tasks: [], resources: [], projectName: finalName }),
+   organigram: JSON.stringify({ title: finalName, nodes: [] }),
    dashboard: JSON.stringify({
     _type: 'AVL_WeeklyDashboard',
     _version: 3,
-    meta: { title: 'New Dashboard', subtitle: '', author: '' },
+    meta: { title: finalName, subtitle: '', author: '' },
     activeWeek: week,
     snapshots: [{
      week,
@@ -88,7 +108,7 @@ export class HubComponent implements OnInit {
 
   const newFile = {
    tool_type: toolType,
-   name: `Untitled ${this.getToolName(toolType)}`,
+   name: finalName,
    json_payload: defaultPayloads[toolType]
   };
 
@@ -125,6 +145,27 @@ export class HubComponent implements OnInit {
 
  cancelDelete() {
   this.deletingFileId = null;
+ }
+
+ renameFile(file: any) {
+  const newName = window.prompt("Enter new project name:", file.name);
+  if (newName === null) {
+   return;
+  }
+  
+  const finalName = newName.trim();
+  if (!finalName || finalName === file.name) {
+   return;
+  }
+  
+  this.api.updateFile(file.id, { name: finalName }).subscribe({
+   next: () => {
+    this.loadFiles();
+   },
+   error: err => {
+    this.errorMsg = err.error?.detail || 'Failed to rename project.';
+   }
+  });
  }
 
  openShareModal(id: number) {

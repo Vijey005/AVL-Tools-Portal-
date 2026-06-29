@@ -4,7 +4,7 @@ SQLAlchemy ORM models — Users and Files.
 from datetime import datetime, timezone
 
 from sqlalchemy import (
-    Column, Integer, String, Boolean, Text, DateTime, ForeignKey,
+    Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Table
 )
 from sqlalchemy.orm import relationship
 
@@ -13,6 +13,14 @@ from app.database import Base
 
 def _utcnow():
     return datetime.now(timezone.utc)
+
+
+file_shares = Table(
+    "file_shares",
+    Base.metadata,
+    Column("file_id", Integer, ForeignKey("files.id", ondelete="CASCADE"), primary_key=True),
+    Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+)
 
 
 class User(Base):
@@ -24,6 +32,7 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     is_admin = Column(Boolean, default=False, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+    is_approved = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=_utcnow, nullable=False)
 
     # Relationship to files
@@ -48,6 +57,7 @@ class File(Base):
     # Relationships
     owner = relationship("User", back_populates="files", foreign_keys=[owner_id])
     shared_by_user = relationship("User", foreign_keys=[shared_by_user_id])
+    shared_with_users = relationship("User", secondary=file_shares, backref="shared_files_ref")
 
     def __repr__(self):
         return f"<File id={self.id} name={self.name!r} tool={self.tool_type}>"

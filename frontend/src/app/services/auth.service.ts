@@ -15,6 +15,16 @@ export class AuthService {
 
  constructor(private http: HttpClient, private router: Router) {
   this.checkToken();
+  window.addEventListener('storage', (event) => {
+   if (event.key === this.tokenKey) {
+    if (!event.newValue) {
+     this.currentUserSubject.next(null);
+     this.router.navigate(['/login']);
+    } else {
+     this.fetchProfile().subscribe();
+    }
+   }
+  });
  }
 
  get token(): string | null {

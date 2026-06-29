@@ -30,7 +30,7 @@ def update_user(
     db: Session = Depends(get_db),
     admin: User = Depends(require_admin),
 ):
-    """Toggle admin/active status or update display name (admin only)."""
+    """Toggle admin/active/approved status or update display name (admin only)."""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -46,11 +46,18 @@ def update_user(
             status_code=400,
             detail="You cannot revoke your own admin privileges",
         )
+    if user.id == admin.id and body.is_approved is False:
+        raise HTTPException(
+            status_code=400,
+            detail="You cannot unapprove your own account",
+        )
 
     if body.is_admin is not None:
         user.is_admin = body.is_admin
     if body.is_active is not None:
         user.is_active = body.is_active
+    if body.is_approved is not None:
+        user.is_approved = body.is_approved
     if body.display_name is not None:
         user.display_name = body.display_name
 

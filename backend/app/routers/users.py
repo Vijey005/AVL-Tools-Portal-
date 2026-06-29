@@ -6,15 +6,16 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import User
-from app.schemas import UserRegister, UserLogin, Token, UserOut
+from typing import List
+from app.schemas import UserRegister, UserLogin, Token, UserOut, UserSearchOut
 from app.auth import hash_password, verify_password, create_access_token, get_current_user
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
-@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 def register(body: UserRegister, db: Session = Depends(get_db)):
-    """Create a new user account and return a JWT."""
+    """Create a new user account."""
     # Check for existing email
     existing = db.query(User).filter(User.email == body.email).first()
     if existing:
@@ -29,13 +30,13 @@ def register(body: UserRegister, db: Session = Depends(get_db)):
         hashed_password=hash_password(body.password),
         is_admin=False,
         is_active=True,
+        is_approved=False,
     )
     db.add(user)
     db.commit()
     db.refresh(user)
 
-    token = create_access_token(user.id)
-    return Token(access_token=token)
+    return {"message": "Registration successful. Please wait for an admin to approve your account."}
 
 
 @router.post("/login", response_model=Token)
@@ -52,6 +53,11 @@ def login(body: UserLogin, db: Session = Depends(get_db)):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is disabled. Contact your administrator.",
         )
+    if not user.is_approved and not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is pending admin approval.",
+        )
 
     token = create_access_token(user.id)
     return Token(access_token=token)
@@ -61,3 +67,20 @@ def login(body: UserLogin, db: Session = Depends(get_db)):
 def get_profile(current_user: User = Depends(get_current_user)):
     """Return the currently authenticated user's profile."""
     return current_user
+
+
+@router.get("/search", response_model=List[UserSearchOut])
+def search_users(q: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Search active, approved users by email or display name."""
+    if not q or len(q.strip()) < 2:
+        return []
+    
+    search_term = f"%{q.strip().lower()}%"
+    users = db.query(User).filter(
+        User.id != current_user.id,
+        User.is_active == True,
+        User.is_approved == True,
+        (User.email.ilike(search_term)) | (User.display_name.ilike(search_term))
+    ).limit(10).all()
+    
+    return users

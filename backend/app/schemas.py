@@ -31,12 +31,22 @@ class TokenData(BaseModel):
 
 # ── User responses ────────────────────────────────────
 
+class UserSearchOut(BaseModel):
+    id: int
+    email: EmailStr
+    display_name: str
+
+    class Config:
+        orm_mode = True
+
+
 class UserOut(BaseModel):
     id: int
     email: str
     display_name: str
     is_admin: bool
     is_active: bool
+    is_approved: bool
     created_at: datetime
 
     class Config:
@@ -47,6 +57,7 @@ class UserUpdate(BaseModel):
     """Admin-only: toggle fields on a user."""
     is_admin: Optional[bool] = None
     is_active: Optional[bool] = None
+    is_approved: Optional[bool] = None
     display_name: Optional[str] = None
 
 
@@ -93,3 +104,4 @@ class FileListItem(BaseModel):
 
 class ShareRequest(BaseModel):
     target_email: EmailStr
+    share_type: Literal["duplicate", "original"] = "duplicate"

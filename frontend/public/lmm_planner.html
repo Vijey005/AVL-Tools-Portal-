@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
@@ -2027,6 +2027,7 @@ function loadJSON(input){
  document.getElementById('proj-inp').value=d.projectName||'Loaded';
  updateModeBadge();recalc();markClean();render();initZoom();
  document.getElementById('startup').style.display='none';showToast('‚ Loaded: '+d.projectName);
+ saveJSON();
  }catch(err){showToast(' Load failed: '+err.message);}
  input.value='';
  };reader.readAsText(file);
@@ -2114,6 +2115,7 @@ function importXL(input){
  tasks=newTasks;resources=newRes;ntid=tasks.length+1;nrid=Math.max(0,...newRes.map(r=>r.id))+1;
  recalc();markClean();collapsed=new Set();render();initZoom();
  document.getElementById('startup').style.display='none';showToast('‚ Imported '+tasks.length+' tasks');
+ saveJSON();
  }catch(err){showToast(' Import error: '+err.message);console.error(err);}
  input.value='';
  };reader.readAsArrayBuffer(file);

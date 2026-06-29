@@ -11,27 +11,56 @@
 
   <div class="modal-body">
    <p class="modal-desc">
-    Sharing will create an isolated clone of this file for the recipient. Your original file will not be affected by their changes.
+    Sharing options let you collaborate with others on your files.
    </p>
 
    <div *ngIf="errorMsg" class="alert-error">{{ errorMsg }}</div>
    <div *ngIf="successMsg" class="alert-success">{{ successMsg }}</div>
 
-   <div class="form-group">
+   <div class="form-group" style="position: relative;">
     <label class="form-label" for="targetEmail">Recipient Email</label>
     <input
-     type="email"
+     type="text"
      id="targetEmail"
      class="form-control"
-     [(ngModel)]="targetEmail"
-     placeholder="colleague@avl.com">
+     [ngModel]="targetEmail"
+     (ngModelChange)="onSearchChange($event)"
+     (click)="$event.stopPropagation(); showDropdown = true"
+     placeholder="Search by name or email"
+     autocomplete="off">
+     
+    <!-- Dropdown for search results -->
+    <div class="search-dropdown" *ngIf="showDropdown && (searchResults.length > 0 || isSearching)">
+     <div class="search-loading" *ngIf="isSearching">Searching...</div>
+     <div class="search-item" *ngFor="let user of searchResults" (click)="selectUser(user); $event.stopPropagation()">
+      <div class="user-name">{{ user.display_name || 'No Name' }}</div>
+      <div class="user-email">{{ user.email }}</div>
+     </div>
+     <div class="search-item disabled" *ngIf="!isSearching && searchResults.length === 0 && targetEmail.length >= 2">
+      No active users found.
+     </div>
+    </div>
    </div>
+   
+    <div class="form-group" style="margin-top: 15px;">
+     <label class="form-label">Share Type</label>
+     <div style="display: flex; gap: 15px; margin-top: 5px;">
+      <label style="cursor: pointer;">
+       <input type="radio" name="shareType" value="duplicate" [(ngModel)]="shareType">
+       Share Duplicate (Isolated Clone)
+      </label>
+      <label style="cursor: pointer;">
+       <input type="radio" name="shareType" value="original" [(ngModel)]="shareType">
+       Share Original (Collaborative)
+      </label>
+     </div>
+    </div>
   </div>
 
   <div class="modal-footer">
    <button class="btn btn-secondary" (click)="onClose()">Cancel</button>
    <button class="btn btn-primary" [disabled]="!targetEmail || loading" (click)="share()">
-    {{ loading ? 'Sharing...' : 'Share Clone' }}
+    {{ loading ? 'Sharing...' : 'Share File' }}
    </button>
   </div>
  </div>

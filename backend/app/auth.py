@@ -59,15 +59,19 @@ def get_current_user(
     """Resolve JWT → User ORM object. Raises 401 if invalid or inactive."""
     user_id = decode_token(token)
     user = db.query(User).filter(User.id == user_id).first()
+    print(f"DEBUG: get_current_user id={user_id} found={user is not None}")
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account is disabled")
+    if not user.is_approved and not user.is_admin:
+        raise HTTPException(status_code=403, detail="Account is pending admin approval")
     return user
 
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     """Raises 403 if user is not an admin."""
+    print(f"DEBUG: require_admin for user {current_user.email}, is_admin={current_user.is_admin}")
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Admin privileges required")
     return current_user
