@@ -433,8 +433,496 @@ html:not([data-theme="dark"]) .theme-toggle .theme-icon-light{display:block;}
 .ll-row{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);}
 .ll-row:last-child{border:none;}
 .ll-imp{font-family:var(--mono);font-weight:700;font-size:12px;flex-shrink:0;}
+
+/* =============================================================
+   AVL LMM PLANNER — UI POLISH OVERRIDES
+   Pure CSS enhancement layer; no logic changes.
+   ============================================================= */
+
+/* Import Inter from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --rh: 44px;
+  --f: 'Inter', system-ui, sans-serif;
+  /* Refined shadow tokens */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-hbar: 0 2px 16px rgba(0,56,92,.10);
+}
+
+/* ─── HEADER BAR ─────────────────────────────────────────── */
+#hbar {
+  padding: 10px 20px;
+  min-height: 64px;
+  gap: 10px;
+  box-shadow: var(--shadow-hbar);
+  border-bottom-width: 1px;
+}
+
+/* Logo area */
+.logo-wrap {
+  min-width: 160px;
+  gap: 10px;
+}
+.logo-title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.logo-sub {
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  margin-top: 2px;
+}
+
+/* Tool groups */
+.tool-group {
+  padding: 6px 10px;
+  border-radius: 10px;
+  gap: 6px;
+}
+
+/* Buttons — more breathing room */
+.hbtn {
+  padding: 7px 13px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  gap: 6px;
+  border-width: 1.5px;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hbtn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.hbtn:active {
+  transform: translateY(0) scale(0.98);
+}
+.hbtn.pri {
+  box-shadow: 0 4px 14px rgba(0,127,163,.30);
+  font-weight: 700;
+}
+.hbtn.pri:hover {
+  box-shadow: 0 6px 18px rgba(0,127,163,.40);
+}
+
+/* Separator */
+.hsep {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  opacity: 0.6;
+}
+
+/* Mode badge */
+.mbadge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.4px;
+}
+
+/* View group tabs */
+.view-group {
+  padding: 5px;
+  border-radius: 10px;
+  gap: 3px;
+}
+.vtab {
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 7px;
+  letter-spacing: 0.01em;
+  transition: all 0.15s ease;
+}
+.vtab.active {
+  box-shadow: var(--shadow-sm);
+}
+.vtab:hover:not(.active) {
+  transform: translateY(-1px);
+}
+
+/* ─── ZOOM / DATE-RANGE BAR ──────────────────────────────── */
+#zoom-bar {
+  padding: 9px 18px;
+  gap: 10px;
+  font-size: 12px;
+  background: var(--s1);
+  border-bottom-width: 1px;
+}
+#zoom-bar label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--dim);
+  letter-spacing: 0.02em;
+}
+#zoom-bar input[type=date] {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  border-width: 1.5px;
+}
+#zoom-bar input[type=range] {
+  width: 100px;
+  height: 4px;
+  cursor: pointer;
+}
+
+/* ─── COLUMN HEADERS ─────────────────────────────────────── */
+#hdr-row {
+  border-bottom-width: 2px;
+  background: var(--s1);
+}
+.thd {
+  height: 34px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 0 10px;
+  color: var(--dim);
+}
+
+/* ─── TASK TABLE ROWS ────────────────────────────────────── */
+.tr {
+  height: var(--rh);
+  border-bottom-width: 1px;
+  transition: background 0.1s ease;
+}
+.tr:hover {
+  background: var(--sel-bg);
+}
+.td {
+  padding: 0 10px;
+  font-size: 12.5px;
+}
+
+/* Task name indentation / hierarchy */
+.task-name-l0 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.task-name-mile {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* Tree toggle */
+.tree-tog {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  font-size: 10px;
+  margin-right: 5px;
+}
+
+/* Resource chips */
+.rchip {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.01em;
+}
+
+/* Progress bar */
+.pbar-w {
+  gap: 6px;
+}
+.pbar {
+  height: 6px;
+  border-radius: 4px;
+}
+.pct-lbl {
+  font-size: 11px;
+  min-width: 30px;
+}
+
+/* Row action buttons */
+.row-acts {
+  right: 8px;
+  border-radius: 7px;
+  padding: 3px;
+  gap: 3px;
+}
+.row-act {
+  width: 24px;
+  height: 22px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+/* Critical row accent */
+.tr.crit-row {
+  border-left-width: 3px;
+}
+
+/* ─── GANTT BARS ─────────────────────────────────────────── */
+.gbar {
+  top: 10px;
+  height: 24px;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.12);
+  transition: filter 0.12s, transform 0.12s;
+}
+.gbar:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
+}
+.gbar.summ {
+  height: 18px;
+  top: 13px;
+  border-radius: 4px;
+}
+.gbar.mile {
+  width: 18px !important;
+  height: 18px !important;
+  top: 13px;
+  border-radius: 3px;
+}
+.gbar-lbl {
+  font-size: 10.5px;
+  padding: 0 7px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* ─── TIMELINE HEADER ────────────────────────────────────── */
+.tl-month {
+  font-size: 11.5px;
+  font-weight: 700;
+  height: 22px;
+  padding: 0 8px;
+  letter-spacing: 0.02em;
+}
+.tl-week {
+  height: 18px;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 0 4px;
+}
+.tld {
+  height: 24px;
+}
+.tld .dn {
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.tld .dd {
+  font-size: 8.5px;
+}
+
+/* ─── STATS / KPI CARDS ──────────────────────────────────── */
+.kpi {
+  border-radius: 12px;
+  padding: 18px 16px;
+  box-shadow: var(--shadow-md);
+  border-width: 1px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,56,92,.12);
+}
+.kpi-val {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.kpi-lbl {
+  font-size: 11.5px;
+  font-weight: 500;
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* ─── SETTINGS SECTIONS ──────────────────────────────────── */
+.settings-section {
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.settings-section h3 {
+  font-size: 14px;
+  margin-bottom: 14px;
+  letter-spacing: -0.01em;
+}
+.mode-card {
+  border-radius: 10px;
+  padding: 16px;
+  transition: all 0.15s ease;
+}
+.mode-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+.mode-card-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ─── MODAL ──────────────────────────────────────────────── */
+#modal {
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(13,31,48,.22);
+}
+.mtit {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: -0.02em;
+}
+.mrow {
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.mfg label {
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+.minp {
+  padding: 8px 10px;
+  border-radius: 7px;
+  font-size: 13px;
+  border-width: 1.5px;
+  transition: border-color 0.15s ease;
+}
+.minp:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0,127,163,.12);
+}
+.mbtns {
+  margin-top: 20px;
+  padding-top: 16px;
+  gap: 10px;
+}
+
+/* ─── TOAST ──────────────────────────────────────────────── */
+#toast {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 12px 32px rgba(13,31,48,.18);
+  bottom: 24px;
+  right: 24px;
+}
+
+/* ─── LIGHT MODE SURFACE REFINEMENTS ─────────────────────── */
+[data-theme="light"] #hbar {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+[data-theme="light"] .tool-group.primary-tools {
+  background: linear-gradient(135deg, #eef9fc 0%, #e0f4f9 100%);
+  border-color: #b0dde9;
+}
+[data-theme="light"] .view-group {
+  background: #f0f4f8;
+  border-color: #d4dde7;
+}
+[data-theme="light"] .thd {
+  background: linear-gradient(180deg, #f7f9fb 0%, #eef2f7 100%);
+}
+[data-theme="light"] .kpi {
+  background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+}
+[data-theme="light"] .settings-section {
+  background: #ffffff;
+}
+
+/* ─── DARK MODE SURFACE REFINEMENTS ──────────────────────── */
+[data-theme="dark"] #hbar {
+  background: linear-gradient(135deg, #161b22 0%, #1c2128 100%);
+  box-shadow: 0 2px 20px rgba(0,0,0,.3);
+}
+[data-theme="dark"] .tool-group.primary-tools {
+  background: rgba(88,166,255,.06);
+  border-color: rgba(88,166,255,.2);
+}
+[data-theme="dark"] .view-group {
+  background: #1c2128;
+  border-color: #30363d;
+}
+[data-theme="dark"] .kpi {
+  background: linear-gradient(135deg, #1c2128 0%, #21262d 100%);
+}
+[data-theme="dark"] .tr:hover {
+  background: rgba(88,166,255,.08);
+}
+[data-theme="dark"] .gbar {
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
+}
+[data-theme="dark"] .gbar:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.45);
+}
+
+/* ─── SMOOTH SCROLLBAR ───────────────────────────────────── */
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--b1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--dim);
+}
+
+/* ─── SECTION TITLE POLISH ───────────────────────────────── */
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 20px 0 10px;
+  letter-spacing: -0.01em;
+}
+
+/* ─── STARTUP SPLASH ─────────────────────────────────────── */
+#startup > div {
+  border-radius: 16px;
+  padding: 36px 32px;
+  box-shadow: 0 24px 60px rgba(13,31,48,.18);
+}
+
+/* ─── QUICK EDIT POPOVER ─────────────────────────────────── */
+#qedit {
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.25);
+}
+#qedit .qe-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+
+/* ─── ANALYSIS / COMPARE POLISH ──────────────────────────── */
+.cmp-section {
+  border-radius: 12px;
+  padding: 20px;
+}
+.cmp-section h3 {
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+.cmp-chip {
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* END UI POLISH */
 </style>
 </head>
+
 <body>
 
 <div id="shell">
@@ -572,7 +1060,7 @@ html:not([data-theme="dark"]) .theme-toggle .theme-icon-light{display:block;}
 <!-- STARTUP -->
 <div id="startup" style="position:fixed;inset:0;background:var(--overlay);z-index:400;display:flex;align-items:center;justify-content:center;">
  <div style="background:var(--s0);border:1px solid var(--border);border-radius:12px;padding:28px;width:420px;text-align:center;">
- <img src="data:image/webp;base64,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" style="width:56px;height:56px;border-radius:12px;margin-bottom:12px">
+ <img src="/logo.png" style="width:56px;height:56px;border-radius:12px;margin-bottom:12px;object-fit:contain;background:white;padding:4px">
  <div style="font-size:22px;font-weight:800;color:var(--teal);margin-bottom:4px">AVL LMM Planner</div>
  <div style="font-size:12px;color:var(--dim);margin-bottom:24px">Gantt | CPM | Resources | Change Tracking</div>
  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">

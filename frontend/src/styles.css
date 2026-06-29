@@ -1,189 +1,359 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
+/* ============================================================
+   DESIGN SYSTEM TOKENS — AVL Tools Portal
+   Source of truth: design_system_guide.md
+   ============================================================ */
+
 :root {
-  /* AVL Brand Palette */
-  --avl-dark-blue: #005A99;
-  --avl-turquoise: #00A4C7;
-  --avl-teal: #01C9B2;
-  --avl-sage: #698E6D;
-  --avl-dark-green: #028550;
-  --avl-green: #8BD94B;
+  /* ----- AVL Primary Palette ----- */
+  --color-dark-blue:  #005A99;
+  --color-turquoise:  #00A4C7;
+  --color-navy-cyan:  #01C9B2;
+  --color-teal:       #698E6D;
+  --color-dark-green: #028550;
+  --color-green:      #8BD94B;
 
-  /* Semantic tokens */
-  --avl-accent: var(--avl-dark-blue);
-  --avl-accent-glow: rgba(0, 90, 153, 0.25);
-  --avl-primary: var(--avl-dark-blue);
-  --avl-primary-hover: #0070b8;
-  --avl-gradient: linear-gradient(90deg, #0096c7 0%, #00a3c8 50%, #00b1c2 100%);
+  /* Aliases (keep for backward compat with component styles) */
+  --avl-dark-blue:    var(--color-dark-blue);
+  --avl-turquoise:    var(--color-turquoise);
+  --avl-teal:         var(--color-navy-cyan);
+  --avl-sage:         var(--color-teal);
+  --avl-dark-green:   var(--color-dark-green);
+  --avl-green:        var(--color-green);
 
-  /* Light professional surfaces */
-  --bg-base: #e8edf2;
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #f4f7fa;
-  --bg-card: #ffffff;
+  /* ----- UI / Surface Colors (Light Theme) ----- */
+  --color-bg:             #f0f4f8;
+  --color-surface:        #ffffff;
+  --color-surface-border: rgba(0, 90, 153, 0.12);
+  --color-sidebar-border: rgba(0, 90, 153, 0.10);
+  --color-input-bg:       #f8fafc;
+  --color-input-border:   #e2e8f0;
 
-  /* Text */
-  --text-main: #1a2332;
-  --text-muted: #6b7280;
+  /* Surface aliases */
+  --bg-base:              var(--color-bg);
+  --bg-surface:           var(--color-surface);
+  --bg-surface-elevated:  #f4f7fa;
+  --bg-card:              var(--color-surface);
+  --border-subtle:        var(--color-input-border);
+  --border-focus:         var(--color-turquoise);
+
+  /* ----- Typography Colors ----- */
+  --color-text-dark:    #1e293b;
+  --color-text-muted:   #64748b;
+  --color-text-subdued: #334155;
+  --color-placeholder:  #94a3b8;
+
+  /* Text aliases */
+  --text-main:    var(--color-text-dark);
+  --text-muted:   var(--color-text-muted);
   --text-inverse: #ffffff;
 
-  /* Borders */
-  --border-subtle: #cfd8e3;
-  --border-focus: #aebdca;
+  /* ----- Semantic Colors ----- */
+  --color-danger:  #ef4444;
+  --status-green:  #028550;
+  --status-amber:  #d97706;
+  --status-red:    var(--color-danger);
 
-  /* Status */
-  --status-green: #028550;
-  --status-amber: #d97706;
-  --status-red: #dc2626;
+  /* ----- Semantic Tokens ----- */
+  --avl-primary:        var(--color-dark-blue);
+  --avl-primary-hover:  #0070b8;
+  --avl-accent:         var(--color-dark-blue);
+  --avl-accent-glow:    rgba(0, 90, 153, 0.25);
 
-  /* Effects */
+  /* Gradient used on primary buttons & navbar */
+  --avl-gradient:         linear-gradient(135deg, var(--color-dark-blue), var(--color-turquoise));
+  --avl-gradient-hover:   linear-gradient(135deg, var(--color-turquoise), var(--color-dark-green));
+  --avl-gradient-splash:  linear-gradient(160deg, #005A99 0%, #00A4C7 35%, #01C9B2 65%, #028550 100%);
+
+  /* ----- Shadows & Elevation ----- */
+  --shadow-navbar:  0 2px 8px rgba(0, 90, 153, 0.15);
+  --shadow-sidebar: 2px 0 8px rgba(0, 0, 0, 0.03);
+  --shadow-card:    0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 90, 153, 0.04);
+  --shadow-btn:     0 4px 15px rgba(0, 90, 153, 0.25);
+  --shadow-modal:   0 10px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-sm:      0 2px 6px rgba(0, 56, 92, 0.12);
+  --shadow-lg:      0 4px 16px rgba(0, 90, 153, 0.08);
+
+  /* ----- Layout ----- */
+  --header-height: 60px;
+
+  /* ----- Effects ----- */
   --glass-blur: blur(12px);
-  --shadow-sm: 0 2px 6px rgba(0, 56, 92, 0.12);
-  --shadow-lg: 0 12px 28px rgba(0, 56, 92, 0.16);
-  --shadow-card: 0 3px 12px rgba(0, 56, 92, 0.1);
-
-  /* Layout */
-  --header-height: 64px;
 }
 
-* {
+/* ============================================================
+   DARK THEME OVERRIDES
+   ============================================================ */
+:root[data-theme="dark"] {
+  --color-bg:             #0d1117;
+  --color-surface:        #161b22;
+  --color-surface-border: rgba(255, 255, 255, 0.08);
+  --color-sidebar-border: rgba(255, 255, 255, 0.06);
+  --color-input-bg:       #21262d;
+  --color-input-border:   #30363d;
+
+  --bg-base:             #0d1117;
+  --bg-surface:          #161b22;
+  --bg-surface-elevated: #21262d;
+  --bg-card:             #161b22;
+  --border-subtle:       #30363d;
+  --border-focus:        #58a6ff;
+
+  --color-text-dark:    #c9d1d9;
+  --color-text-muted:   #8b949e;
+  --color-text-subdued: #b1bac4;
+  --color-placeholder:  #6e7681;
+
+  --text-main:    #c9d1d9;
+  --text-muted:   #8b949e;
+  --text-inverse: #0d1117;
+
+  --avl-primary:       #58a6ff;
+  --avl-primary-hover: #79c0ff;
+  --avl-accent:        #58a6ff;
+  --avl-accent-glow:   rgba(88, 166, 255, 0.25);
+
+  --shadow-sm:   0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg:   0 12px 28px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 3px 12px rgba(0, 0, 0, 0.3);
+  --shadow-btn:  0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+html {
+  font-size: 16px;
+}
+
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-base);
+  font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--color-bg);
   color: var(--text-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
 }
 
+/* ---- Headings ---- */
 h1, h2, h3, h4, h5 {
+  font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-main);
 }
 
-/* Base App Layout */
+h1 { font-size: 2rem;   line-height: 1.3; font-weight: 700; }
+h2 { font-size: 1.75rem; font-weight: 700; }
+
+/* ============================================================
+   BASE APP LAYOUT
+   ============================================================ */
 .content-wrapper {
   padding-top: var(--header-height);
   min-height: 100vh;
   max-width: 1400px;
   margin: 0 auto;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .content-wrapper.no-nav {
   padding-top: 0;
 }
 
-/* Form Inputs */
+/* ============================================================
+   FORM ELEMENTS
+   ============================================================ */
 .form-control {
   width: 100%;
-  padding: 10px 14px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  color: var(--text-main);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-input-bg);
+  border: 1.5px solid var(--color-input-border);
+  border-radius: 8px;
+  color: var(--color-text-dark);
+  font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control::placeholder {
+  color: var(--color-placeholder);
 }
 
 .form-control:focus {
   outline: none;
-  border-color: var(--avl-turquoise);
-  box-shadow: 0 0 0 3px rgba(0, 164, 199, 0.15);
+  border-color: var(--color-turquoise);
+  box-shadow: 0 0 0 3px rgba(0, 164, 199, 0.12);
+}
+
+.form-control:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .form-label {
   display: block;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: var(--color-text-subdued);
+  margin-bottom: 0.5rem;
 }
 
-/* Buttons */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 9px 18px;
-  font-size: 0.875rem;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
   font-weight: 600;
-  border-radius: 6px;
+  font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  border-radius: 8px;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-family: 'Inter', sans-serif;
+  transition: all 0.2s ease;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .btn:active {
-  transform: scale(0.98);
+  transform: translateY(0) !important;
 }
 
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Primary — gradient */
 .btn-primary {
-  background: var(--avl-primary);
+  background: var(--avl-gradient);
   color: #fff;
-  box-shadow: var(--shadow-sm);
+  border-color: transparent;
+  box-shadow: var(--shadow-btn);
 }
 
-.btn-primary:hover {
-  background: var(--avl-primary-hover);
-  box-shadow: 0 4px 12px var(--avl-accent-glow);
+.btn-primary:hover:not(:disabled) {
+  background: var(--avl-gradient-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 164, 199, 0.3);
 }
 
+/* Secondary */
 .btn-secondary {
   background: var(--bg-surface);
   border-color: var(--border-subtle);
   color: var(--text-main);
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   background: var(--bg-surface-elevated);
-  border-color: var(--avl-turquoise);
+  border-color: var(--color-turquoise);
   color: var(--avl-primary);
 }
 
+/* Danger */
 .btn-danger {
-  background: rgba(220, 38, 38, 0.08);
-  color: var(--status-red);
-  border-color: rgba(220, 38, 38, 0.25);
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
-.btn-danger:hover {
-  background: var(--status-red);
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger);
   color: #fff;
+  border-color: var(--color-danger);
 }
 
+/* Outline */
 .btn-outline {
   background: transparent;
   border-color: var(--avl-primary);
   color: var(--avl-primary);
 }
 
-.btn-outline:hover {
+.btn-outline:hover:not(:disabled) {
   background: rgba(0, 90, 153, 0.06);
+  border-color: var(--color-turquoise);
+  color: var(--color-turquoise);
 }
 
-/* Cards */
+/* Small variant */
+.btn-sm {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+}
+
+/* Full-width block variant */
+.btn-block {
+  width: 100%;
+  padding: 0.9rem;
+  justify-content: center;
+}
+
+/* ============================================================
+   CARDS / GLASS PANELS
+   ============================================================ */
 .glass-panel {
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border: 1px solid var(--color-surface-border);
+  border-radius: 12px;
   box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-/* Icon utilities */
+.glass-panel:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(0, 90, 153, 0.18);
+}
+
+/* ============================================================
+   BADGES & PILLS
+   ============================================================ */
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 20px;
+  background: var(--bg-surface-elevated);
+  color: var(--avl-primary);
+  border: 1px solid var(--color-surface-border);
+}
+
+/* ============================================================
+   AVATARS
+   ============================================================ */
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   ICON UTILITIES
+   ============================================================ */
 .icon-sm {
   width: 16px;
   height: 16px;
@@ -196,16 +366,18 @@ h1, h2, h3, h4, h5 {
   flex-shrink: 0;
 }
 
-/* Alert banners */
+/* ============================================================
+   ALERT BANNERS
+   ============================================================ */
 .alert-banner {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 500;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
 }
 
 .alert-banner.warning {
@@ -217,35 +389,117 @@ h1, h2, h3, h4, h5 {
 .alert-banner.info {
   background: #e8f4fd;
   border: 1px solid #b3d9f0;
-  color: var(--avl-dark-blue);
+  color: var(--color-dark-blue);
 }
 
-/* Animations */
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+.text-muted   { color: var(--text-muted); }
+.text-dark    { color: var(--color-text-dark); }
+.text-danger  { color: var(--color-danger); }
+.w-100        { width: 100%; }
+
+/* ============================================================
+   DARK MODE TOGGLE SWITCH
+   ============================================================ */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-toggle-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 22px;
+  transition: background 0.3s ease;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: rgba(1, 201, 178, 0.6);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(18px);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+/* Fade in — used for page/component mount (.animate-fade-in) */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Slide up — existing alias */
 @keyframes slideUpFade {
-  0% { opacity: 0; transform: translateY(12px); }
-  100% { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .animate-in {
   animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.text-muted {
-  color: var(--text-muted);
+/* Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--avl-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
 }
-::-webkit-scrollbar-track {
-  background: var(--bg-base);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border-focus);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
+
+/* ============================================================
+   CUSTOM SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar         { width: 7px; height: 7px; }
+::-webkit-scrollbar-track   { background: var(--color-bg); }
+::-webkit-scrollbar-thumb   { background: var(--color-surface-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
