@@ -176,9 +176,9 @@
  <!-- Footer Stats -->
  <footer class="dashboard-footer animate-in" style="animation-delay: 0.3s;">
   <div class="stats-group">
-   <div class="stat-pill"><span class="dot green"></span> {{ onTrackCount }} On Track</div>
-   <div class="stat-pill"><span class="dot amber"></span> {{ atRiskCount }} At Risk</div>
-   <div class="stat-pill"><span class="dot red"></span> {{ offTrackCount }} Off Track</div>
+   <div class="stat-pill"><span class="dot green"></span> On Track {{ onTrackCount }}</div>
+   <div class="stat-pill"><span class="dot amber"></span> At Risk {{ atRiskCount }}</div>
+   <div class="stat-pill"><span class="dot red"></span> Off Track {{ offTrackCount }}</div>
   </div>
   <div class="meta-stats">
    Total Items: {{ activeSnapshot.rows.length }}
