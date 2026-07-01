@@ -9,7 +9,8 @@
   grid-template-columns: minmax(360px, 44%) minmax(420px, 56%);
   min-height: 100vh;
   background:
-    radial-gradient(1200px 500px at 85% -10%, rgba(0, 164, 199, 0.08), transparent 60%),
+    radial-gradient(1200px 520px at 85% -10%, rgba(0, 164, 199, 0.1), transparent 60%),
+    radial-gradient(900px 420px at 15% 110%, rgba(0, 90, 153, 0.07), transparent 65%),
     var(--color-bg);
 }
 
@@ -28,6 +29,7 @@
   overflow: hidden;
   gap: clamp(1.5rem, 2.5vw, 2.4rem);
   align-items: center;
+  text-align: center;
 }
 
 /* Decorative overlay shapes — low-opacity circles for depth */
@@ -65,6 +67,7 @@
 .login-brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   position: relative;
   z-index: 1;
@@ -72,10 +75,11 @@
 }
 
 .login-logo-mark {
-  width: 220px;
-  height: 84px;
+  width: 230px;
+  height: 88px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -94,6 +98,9 @@
   position: relative;
   z-index: 1;
   width: min(100%, 440px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Guide: H1 on login — larger for aesthetic balance */
@@ -104,6 +111,7 @@
   color: #fff;
   margin: 0 0 1rem;
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 /* Guide: subtitle — larger for readability */
@@ -113,6 +121,7 @@
   line-height: 1.6;
   margin-bottom: 1.5rem;
   max-width: 430px;
+  text-wrap: pretty;
 }
 
 /* Secure Login badge — border-radius 20px */
@@ -128,6 +137,7 @@
   padding: 6px 14px;
   border-radius: 24px;
   backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(1, 80, 92, 0.2);
 }
 
 /* ============================================================
@@ -140,6 +150,7 @@
   justify-content: center;
   padding: clamp(1.2rem, 2.5vw, 2.5rem);
   background: var(--color-bg);
+  position: relative;
 }
 
 /* ---- Card ---- */
@@ -147,11 +158,21 @@
   width: 100%;
   max-width: 430px;
   padding: 2.1rem 1.9rem;
-  border-radius: 14px;
+  border-radius: 16px;
+  position: relative;
   border: 1px solid var(--border-subtle);
   background: color-mix(in srgb, var(--bg-surface) 94%, #fff 6%);
-  box-shadow: 0 10px 34px rgba(3, 12, 27, 0.08);
+  box-shadow: 0 18px 42px rgba(3, 12, 27, 0.1);
   animation: fadeIn 0.5s ease-out forwards;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 35%);
 }
 
 /* ---- Brand header inside card ---- */
@@ -165,11 +186,13 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 0.375rem;
+  letter-spacing: -0.01em;
 }
 
 .subtitle {
   color: var(--color-text-muted);
   font-size: 0.86rem;
+  line-height: 1.45;
 }
 
 /* ---- Form groups — 1.5rem gap per guide ---- */
@@ -183,12 +206,13 @@
   padding: 0.78rem 0.9rem;
   border: 1px solid var(--border-subtle);
   background: var(--bg-surface);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .login-card .form-control:focus {
   border-color: var(--avl-primary);
   box-shadow: 0 0 0 3px rgba(0, 90, 153, 0.12);
+  background: color-mix(in srgb, var(--bg-surface) 88%, #fff 12%);
   outline: none;
 }
 
@@ -199,6 +223,14 @@
   margin-top: 0.35rem;
   font-size: 0.95rem;
   border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(0, 90, 153, 0.16);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.btn-block:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(0, 90, 153, 0.2);
+  filter: saturate(1.03);
 }
 
 /* ---- Error alert ---- */
@@ -223,6 +255,7 @@
   justify-content: center;
   gap: 4px;
   flex-wrap: wrap;
+  line-height: 1.45;
 }
 
 .btn-link {
@@ -253,7 +286,8 @@
   .login-left {
     min-height: 36vh;
     padding: 2.2rem 1.4rem 2.2rem;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
   }
 
   .login-hero h1 {

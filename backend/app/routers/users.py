@@ -8,6 +8,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.config import EMAIL_MODE, smtp_is_configured
 from app.models import User, PasswordResetRequest, MockEmail
 from app.schemas import (
     UserRegister, UserLogin, Token, UserOut, UserSearchOut,
@@ -158,6 +159,10 @@ def get_debug_emails(
     current_user: Optional[User] = Depends(get_optional_user),
 ):
     """Retrieve simulated emails for the logged-in user or a supplied email address."""
+    mode = EMAIL_MODE if EMAIL_MODE in {"mock", "smtp", "auto"} else "auto"
+    if mode == "smtp" or (mode == "auto" and smtp_is_configured()):
+        raise HTTPException(status_code=404, detail="Simulated inbox is disabled in SMTP mode.")
+
     query = db.query(MockEmail)
 
     if current_user:

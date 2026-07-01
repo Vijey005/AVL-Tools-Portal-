@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, SessionLocal, Base
 from app.models import User, File, PasswordResetRequest, PasswordChangeRequest, MockEmail  # noqa: F401 — ensure tables are registered
+from app.config import EMAIL_MODE, smtp_is_configured
 from app.seed import seed_users
 from app.routers import users, admin, files, analytics
 
@@ -26,6 +27,14 @@ async def lifespan(app: FastAPI):
         seed_users(db)
     finally:
         db.close()
+
+    if EMAIL_MODE == "smtp" and not smtp_is_configured():
+        raise RuntimeError(
+            "AVL_EMAIL_MODE is 'smtp' but SMTP config is incomplete. "
+            "Set AVL_SMTP_HOST, AVL_SMTP_USERNAME, AVL_SMTP_PASSWORD, and AVL_MAIL_FROM_EMAIL."
+        )
+
+    print(f"  [mail] mode={EMAIL_MODE} configured_smtp={smtp_is_configured()}")
 
     print("  [ok] Ready!\n")
     yield

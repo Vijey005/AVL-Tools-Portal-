@@ -11,7 +11,7 @@ from app.models import User, PasswordResetRequest
 from app.schemas import UserOut, UserUpdate, PasswordResetReview, PasswordResetRequestOut
 from app.auth import require_admin
 from app.notifications import (
-    send_mock_email,
+    send_email,
     password_reset_approved_body,
     password_reset_rejected_body,
 )
@@ -143,7 +143,7 @@ def review_reset_request(
         reset_req.status = "approved"
         token = reset_req.generate_token()
 
-        send_mock_email(
+        send_email(
             db,
             user.email,
             "Password Reset Approved",
@@ -154,7 +154,7 @@ def review_reset_request(
         return {"message": "Reset request approved. A reset link was sent to the user's email."}
 
     reset_req.status = "rejected"
-    send_mock_email(
+    send_email(
         db,
         user.email,
         "Password Reset Rejected",
