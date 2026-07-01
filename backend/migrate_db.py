@@ -27,6 +27,54 @@ def migrate():
     except sqlite3.OperationalError as e:
         print(f"Error creating file_shares: {e}")
 
+    try:
+        print("Creating password_reset_requests table...")
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS password_reset_requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                status VARCHAR(20) NOT NULL DEFAULT 'pending',
+                reset_token VARCHAR(128) UNIQUE,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                reviewed_at DATETIME,
+                used_at DATETIME,
+                FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE
+            );
+        """)
+    except sqlite3.OperationalError as e:
+        print(f"Error creating password_reset_requests: {e}")
+
+    try:
+        print("Creating password_change_requests table...")
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS password_change_requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                hashed_password VARCHAR(255) NOT NULL,
+                reason TEXT,
+                status VARCHAR(20) NOT NULL DEFAULT 'pending',
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                reviewed_at DATETIME,
+                FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE
+            );
+        """)
+    except sqlite3.OperationalError as e:
+        print(f"Error creating password_change_requests: {e}")
+
+    try:
+        print("Creating mock_emails table...")
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS mock_emails (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                to_email VARCHAR(255) NOT NULL,
+                subject VARCHAR(255) NOT NULL,
+                body TEXT NOT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+    except sqlite3.OperationalError as e:
+        print(f"Error creating mock_emails: {e}")
+
     conn.commit()
     conn.close()
     print("Migration complete.")

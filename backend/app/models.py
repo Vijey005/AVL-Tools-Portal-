@@ -1,6 +1,7 @@
 """
-SQLAlchemy ORM models — Users and Files.
+SQLAlchemy ORM models — Users, Files, and Password Reset Requests.
 """
+import secrets
 from datetime import datetime, timezone
 
 from sqlalchemy import (
@@ -61,3 +62,64 @@ class File(Base):
 
     def __repr__(self):
         return f"<File id={self.id} name={self.name!r} tool={self.tool_type}>"
+
+
+class PasswordResetRequest(Base):
+    """Tracks forgot-password requests that require admin approval."""
+    __tablename__ = "password_reset_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    # status: pending → approved/rejected.  Once user consumes the token → used.
+    status = Column(String(20), default="pending", nullable=False, index=True)
+    # Secure token generated when admin approves — user needs this to set new password
+    reset_token = Column(String(128), unique=True, nullable=True)
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
+    reviewed_at = Column(DateTime, nullable=True)
+    used_at = Column(DateTime, nullable=True)
+
+    # Relationship
+    user = relationship("User", backref="reset_requests")
+
+    def generate_token(self):
+        """Generate a secure reset token when approved."""
+        self.reset_token = secrets.token_urlsafe(48)
+        return self.reset_token
+
+    def __repr__(self):
+        return f"<PasswordResetRequest id={self.id} user_id={self.user_id} status={self.status!r}>"
+
+
+class PasswordChangeRequest(Base):
+    """Tracks logged-in password change requests that require admin approval."""
+    __tablename__ = "password_change_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    # The new password, hashed so it's secure in the DB
+    hashed_password = Column(String(255), nullable=False)
+    reason = Column(Text, nullable=True)
+    # status: pending → approved / rejected
+    status = Column(String(20), default="pending", nullable=False, index=True)
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
+    reviewed_at = Column(DateTime, nullable=True)
+
+    # Relationship
+    user = relationship("User", backref="change_requests")
+
+    def __repr__(self):
+        return f"<PasswordChangeRequest id={self.id} user_id={self.user_id} status={self.status!r}>"
+
+
+class MockEmail(Base):
+    """Simulates real-world email notifications sent to users."""
+    __tablename__ = "mock_emails"
+
+    id = Column(Integer, primary_key=True, index=True)
+    to_email = Column(String(255), nullable=False)
+    subject = Column(String(255), nullable=False)
+    body = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
+
+    def __repr__(self):
+        return f"<MockEmail id={self.id} to={self.to_email!r} subject={self.subject!r}>"

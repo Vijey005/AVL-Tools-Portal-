@@ -9,9 +9,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, SessionLocal, Base
-from app.models import User, File          # noqa: F401 — ensure tables are registered
+from app.models import User, File, PasswordResetRequest, PasswordChangeRequest, MockEmail  # noqa: F401 — ensure tables are registered
 from app.seed import seed_users
-from app.routers import users, admin, files
+from app.routers import users, admin, files, analytics
 
 
 @asynccontextmanager
@@ -52,6 +52,7 @@ app.add_middleware(
 app.include_router(users.router)
 app.include_router(admin.router)
 app.include_router(files.router)
+app.include_router(analytics.router)
 
 
 @app.get("/", tags=["health"])

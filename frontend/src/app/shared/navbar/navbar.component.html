@@ -12,11 +12,11 @@
 
     <div class="nav-links">
       <a routerLink="/hub" routerLinkActive="active" class="nav-link">Workspace</a>
+      <a routerLink="/analytics" routerLinkActive="active" class="nav-link">Analytics</a>
       <a *ngIf="auth.isAdmin" routerLink="/admin" routerLinkActive="active" class="nav-link">Admin</a>
 
       <div class="nav-divider"></div>
 
-      <!-- Global Dark Mode Toggle -->
       <div class="theme-toggle" title="Toggle dark mode">
         <span class="theme-toggle-label">{{ isDark ? '🌙' : '☀️' }}</span>
         <label class="toggle-switch">
@@ -27,7 +27,6 @@
 
       <div class="nav-divider"></div>
 
-      <!-- Profile Dropdown -->
       <div class="profile-menu" *ngIf="auth.currentUser$ | async as user">
         <button
           class="profile-btn"

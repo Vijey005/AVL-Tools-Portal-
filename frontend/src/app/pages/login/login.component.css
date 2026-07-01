@@ -5,9 +5,12 @@
 
 /* Outer shell: flex row, full viewport */
 .login-wrapper {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: minmax(360px, 44%) minmax(420px, 56%);
   min-height: 100vh;
+  background:
+    radial-gradient(1200px 500px at 85% -10%, rgba(0, 164, 199, 0.08), transparent 60%),
+    var(--color-bg);
 }
 
 /* ============================================================
@@ -16,15 +19,15 @@
    Gradient: 160deg, #005A99 → #00A4C7 → #01C9B2 → #028550
    ============================================================ */
 .login-left {
-  flex: 0 0 45%;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 4rem;
+  padding: clamp(2rem, 4vw, 3.5rem);
   background: linear-gradient(160deg, #005A99 0%, #00A4C7 35%, #01C9B2 65%, #028550 100%);
   overflow: hidden;
-  gap: 4rem;
+  gap: clamp(1.5rem, 2.5vw, 2.4rem);
+  align-items: center;
 }
 
 /* Decorative overlay shapes — low-opacity circles for depth */
@@ -62,14 +65,15 @@
 .login-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   position: relative;
   z-index: 1;
+  width: min(100%, 440px);
 }
 
 .login-logo-mark {
-  width: 240px;
-  height: 96px;
+  width: 220px;
+  height: 84px;
   display: inline-flex;
   align-items: center;
   overflow: hidden;
@@ -89,25 +93,26 @@
 .login-hero {
   position: relative;
   z-index: 1;
+  width: min(100%, 440px);
 }
 
 /* Guide: H1 on login — larger for aesthetic balance */
 .login-hero h1 {
-  font-size: 3.5rem;
+  font-size: clamp(2rem, 3vw, 2.85rem);
   font-weight: 800;
   line-height: 1.15;
   color: #fff;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1rem;
   letter-spacing: -0.02em;
 }
 
 /* Guide: subtitle — larger for readability */
 .login-hero p {
-  font-size: 1.2rem;
+  font-size: 1.02rem;
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.6;
-  margin-bottom: 2.5rem;
-  max-width: 480px;
+  margin-bottom: 1.5rem;
+  max-width: 430px;
 }
 
 /* Secure Login badge — border-radius 20px */
@@ -118,9 +123,9 @@
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: #fff;
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  padding: 8px 18px;
+  padding: 6px 14px;
   border-radius: 24px;
   backdrop-filter: blur(8px);
 }
@@ -130,57 +135,70 @@
    flex: 1, padding: 3rem, form max-width: 400px
    ============================================================ */
 .login-right {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3rem;
+  padding: clamp(1.2rem, 2.5vw, 2.5rem);
   background: var(--color-bg);
 }
 
 /* ---- Card ---- */
 .login-card {
   width: 100%;
-  max-width: 400px;
-  padding: 2.25rem 2rem;
+  max-width: 430px;
+  padding: 2.1rem 1.9rem;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: color-mix(in srgb, var(--bg-surface) 94%, #fff 6%);
+  box-shadow: 0 10px 34px rgba(3, 12, 27, 0.08);
   animation: fadeIn 0.5s ease-out forwards;
 }
 
 /* ---- Brand header inside card ---- */
 .brand {
   text-align: center;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.4rem;
 }
 
 .brand h2 {
   color: var(--color-dark-blue);
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin: 0 0 0.375rem;
 }
 
 .subtitle {
   color: var(--color-text-muted);
-  font-size: 0.95rem;
+  font-size: 0.86rem;
 }
 
 /* ---- Form groups — 1.5rem gap per guide ---- */
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.05rem;
 }
 
 /* ---- Login-specific input radius: 10px ---- */
 .login-card .form-control {
   border-radius: 10px;
-  padding: 0.85rem 1rem;
+  padding: 0.78rem 0.9rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-card .form-control:focus {
+  border-color: var(--avl-primary);
+  box-shadow: 0 0 0 3px rgba(0, 90, 153, 0.12);
+  outline: none;
 }
 
 /* ---- Full-width submit button ---- */
 .btn-block {
   width: 100%;
-  padding: 0.9rem;
-  margin-top: 0.5rem;
-  font-size: 1rem;
+  padding: 0.8rem;
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  border-radius: 10px;
 }
 
 /* ---- Error alert ---- */
@@ -197,9 +215,9 @@
 
 /* ---- Toggle mode ---- */
 .toggle-mode {
-  margin-top: 1.5rem;
+  margin-top: 1.1rem;
   text-align: center;
-  font-size: 0.875rem;
+  font-size: 0.82rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -215,7 +233,7 @@
   cursor: pointer;
   padding: 0 4px;
   font-family: inherit;
-  font-size: 0.875rem;
+  font-size: 0.82rem;
   transition: color 0.2s ease;
 }
 
@@ -229,23 +247,65 @@
    ============================================================ */
 @media (max-width: 820px) {
   .login-wrapper {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .login-left {
-    flex: none;
-    padding: 2.5rem 2rem 3rem;
+    min-height: 36vh;
+    padding: 2.2rem 1.4rem 2.2rem;
+    align-items: flex-start;
   }
 
   .login-hero h1 {
-    font-size: 1.65rem;
+    font-size: 1.8rem;
   }
 
   .login-right {
-    padding: 2.5rem 1.25rem;
+    padding: 2rem 1.1rem 2.2rem;
   }
 
   .login-card {
     max-width: 100%;
   }
+}
+
+/* ============================================================
+   FORGOT / RESET PASSWORD ADDITIONS
+   ============================================================ */
+
+/* Forgot password link under login button */
+.forgot-link {
+  text-align: center;
+  margin-top: 0.75rem;
+}
+
+/* Success alert */
+.alert-success {
+  background: rgba(2, 133, 80, 0.08);
+  border: 1px solid rgba(2, 133, 80, 0.2);
+  color: var(--status-green, #028550);
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Mode icon for forgot/reset screens */
+.mode-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(0, 90, 153, 0.08);
+  color: var(--avl-primary, #005A99);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.mode-icon.success {
+  background: rgba(2, 133, 80, 0.08);
+  color: var(--status-green, #028550);
 }

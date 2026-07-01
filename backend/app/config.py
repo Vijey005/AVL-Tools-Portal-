@@ -16,6 +16,9 @@ SECRET_KEY = os.getenv(
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24   # 24 hours
 
+# ── Frontend (for reset links in simulated emails) ─────
+FRONTEND_URL = os.getenv("AVL_FRONTEND_URL", "http://localhost:4200")
+
 # ── Seed users (created on first launch) ──────────────
 SEED_USERS = [
     {

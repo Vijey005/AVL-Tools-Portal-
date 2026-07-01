@@ -205,6 +205,19 @@ input::placeholder, textarea::placeholder {
  z-index: 20;
 }
 
+.top-legends {
+ display: flex;
+ gap: 10px;
+ margin: 12px 0 10px;
+ align-items: center;
+ flex-wrap: wrap;
+ padding: 10px 12px;
+ background: linear-gradient(180deg, color-mix(in srgb, var(--bg-surface) 92%, #fff 8%), var(--bg-surface));
+ border: 1px solid var(--border-subtle);
+ border-radius: 10px;
+ box-shadow: var(--shadow-card);
+}
+
 .action-group {
  display: flex;
  align-items: center;
@@ -350,12 +363,37 @@ input::placeholder, textarea::placeholder {
  margin-top: 16px; padding: 0 8px;
 }
 .stats-group { display: flex; gap: 16px; }
-.stat-pill { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
+.stat-pill {
+ display: flex;
+ align-items: center;
+ gap: 6px;
+ font-size: 12px;
+ color: var(--text-main);
+ background: color-mix(in srgb, var(--bg-surface-elevated) 88%, #fff 12%);
+ border: 1px solid color-mix(in srgb, var(--border-subtle) 80%, #fff 20%);
+ border-radius: 999px;
+ padding: 6px 11px;
+ font-weight: 600;
+ letter-spacing: 0.01em;
+ box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+}
 .stat-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+.stat-pill .dot.neutral { background: var(--avl-primary); }
 .stat-pill .dot.green { background: var(--status-green); }
 .stat-pill .dot.amber { background: var(--status-amber); }
 .stat-pill .dot.red { background: var(--status-red); }
 .meta-stats { font-size: 12px; color: var(--text-muted); }
+
+.total-pill {
+ color: var(--avl-dark-blue);
+ font-weight: 700;
+ background: color-mix(in srgb, var(--avl-primary) 10%, var(--bg-surface) 90%);
+ border-color: color-mix(in srgb, var(--avl-primary) 25%, var(--border-subtle) 75%);
+}
+
+.dashboard-footer .stats-group {
+ display: none;
+}
 
 .btn-primary.sm {
  background: var(--avl-primary);

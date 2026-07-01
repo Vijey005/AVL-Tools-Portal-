@@ -69,6 +69,20 @@ def get_current_user(
     return user
 
 
+def get_optional_user(
+    token: str | None = Depends(OAuth2PasswordBearer(tokenUrl="/api/users/login", auto_error=False)),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """Resolve JWT to User when a token is present; otherwise return None."""
+    if not token:
+        return None
+    try:
+        user_id = decode_token(token)
+    except HTTPException:
+        return None
+    return db.query(User).filter(User.id == user_id).first()
+
+
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     """Raises 403 if user is not an admin."""
     print(f"DEBUG: require_admin for user {current_user.email}, is_admin={current_user.is_admin}")

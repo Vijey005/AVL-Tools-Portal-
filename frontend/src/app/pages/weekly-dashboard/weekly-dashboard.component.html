@@ -41,6 +41,13 @@
   </div>
  </header>
 
+<div class="top-legends animate-in" style="animation-delay: 0.05s;">
+ <div class="stat-pill total-pill"><span class="dot neutral"></span> Total Items {{ activeSnapshot.rows.length }}</div>
+ <div class="stat-pill"><span class="dot green"></span> On Track {{ onTrackCount }}</div>
+ <div class="stat-pill"><span class="dot amber"></span> At Risk {{ atRiskCount }}</div>
+ <div class="stat-pill"><span class="dot red"></span> Off Track {{ offTrackCount }}</div>
+</div>
+
  <!-- Toolbar Actions -->
  <div class="action-bar animate-in no-print" style="animation-delay: 0.1s;">
   <div class="action-group">
@@ -175,14 +182,8 @@
 
  <!-- Footer Stats -->
  <footer class="dashboard-footer animate-in" style="animation-delay: 0.3s;">
-  <div class="stats-group">
-   <div class="stat-pill"><span class="dot green"></span> On Track {{ onTrackCount }}</div>
-   <div class="stat-pill"><span class="dot amber"></span> At Risk {{ atRiskCount }}</div>
-   <div class="stat-pill"><span class="dot red"></span> Off Track {{ offTrackCount }}</div>
-  </div>
-  <div class="meta-stats">
-   Total Items: {{ activeSnapshot.rows.length }}
-  </div>
+ <div class="stats-group"></div>
+  <div class="meta-stats"></div>
  </footer>
 
 </div>

@@ -13,22 +13,31 @@ import { Subscription, interval } from 'rxjs';
 })
 export class AdminComponent implements OnInit, OnDestroy {
  users: any[] = [];
+ resetRequests: any[] = [];
  loading = true;
  errorMsg = '';
+ activeTab: 'users' | 'resets' = 'users';
  private pollingSub?: Subscription;
 
  constructor(private api: ApiService) {}
 
  ngOnInit() {
   this.loadUsers();
-  // Poll for real-time updates every 3 seconds
-  this.pollingSub = interval(3000).subscribe(() => this.pollUsers());
+  this.loadResetRequests();
+  this.pollingSub = interval(3000).subscribe(() => {
+   this.pollUsers();
+   this.pollResetRequests();
+  });
  }
 
  ngOnDestroy() {
   if (this.pollingSub) {
    this.pollingSub.unsubscribe();
   }
+ }
+
+ get pendingResetCount(): number {
+  return this.resetRequests.filter(r => r.status === 'pending').length;
  }
 
  loadUsers() {
@@ -50,12 +59,27 @@ export class AdminComponent implements OnInit, OnDestroy {
   this.api.getUsers().subscribe({
    next: (data) => {
     this.users = data;
-    this.errorMsg = ''; // clear any transient errors
+    this.errorMsg = '';
    },
-   error: (err) => {
-    // silently fail polling or update errorMsg if needed
-    // this.errorMsg = err.error?.detail || 'Lost connection to server.';
-   }
+   error: () => {}
+  });
+ }
+
+ loadResetRequests() {
+  this.api.getResetRequests().subscribe({
+   next: (data) => {
+    this.resetRequests = data;
+   },
+   error: () => {}
+  });
+ }
+
+ pollResetRequests() {
+  this.api.getResetRequests().subscribe({
+   next: (data) => {
+    this.resetRequests = data;
+   },
+   error: () => {}
   });
  }
 
@@ -83,5 +107,21 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.loadUsers();
    });
   }
+ }
+
+ reviewResetRequest(request: any, action: 'approve' | 'reject') {
+  const actionLabel = action === 'approve' ? 'approve' : 'reject';
+  if (!confirm(`Are you sure you want to ${actionLabel} the password reset request for ${request.user_email}?`)) {
+   return;
+  }
+
+  this.api.reviewResetRequest(request.id, action).subscribe({
+   next: () => {
+    this.loadResetRequests();
+   },
+   error: (err) => {
+    alert(err.error?.detail || `Failed to ${actionLabel} request.`);
+   }
+  });
  }
 }

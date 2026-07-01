@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ShareModalComponent } from '../../shared/share-modal/share-modal.component';
+import { Subscription, interval } from 'rxjs';
 
 function currentWeek(): string {
  const d = new Date();
@@ -20,7 +21,7 @@ function currentWeek(): string {
  templateUrl: './hub.component.html',
  styleUrls: ['./hub.component.css']
 })
-export class HubComponent implements OnInit {
+export class HubComponent implements OnInit, OnDestroy {
  files: any[] = [];
  myProjects: any[] = [];
  sharedWithMe: any[] = [];
@@ -34,30 +35,51 @@ export class HubComponent implements OnInit {
  selectedFileId: number | null = null;
  deletingFileId: number | null = null;
 
+ private currentUserId: number | null = null;
+ private pollingSub?: Subscription;
+ private userSub?: Subscription;
+
  constructor(private api: ApiService, private authService: AuthService, private router: Router) {}
 
  ngOnInit() {
-  this.loadFiles();
+  this.userSub = this.authService.currentUser$.subscribe(user => {
+   this.currentUserId = user?.id ?? null;
+   if (this.currentUserId) {
+    this.loadFiles(true);
+   }
+  });
+
+  this.pollingSub = interval(3000).subscribe(() => {
+   if (this.currentUserId) {
+    this.pollFiles();
+   }
+  });
  }
 
- loadFiles() {
-  this.loading = true;
+ ngOnDestroy() {
+  this.pollingSub?.unsubscribe();
+  this.userSub?.unsubscribe();
+ }
+
+ private categorizeFiles(files: any[]) {
+  if (!this.currentUserId) {
+   this.myProjects = [];
+   this.sharedWithMe = [];
+   return;
+  }
+  this.myProjects = files.filter(f => f.owner_id === this.currentUserId);
+  this.sharedWithMe = files.filter(f => f.owner_id !== this.currentUserId);
+ }
+
+ loadFiles(showLoading = false) {
+  if (showLoading) {
+   this.loading = true;
+  }
   this.errorMsg = '';
   this.api.getFiles(this.selectedToolType || undefined).subscribe({
    next: files => {
     this.files = files;
-    
-    // Retrieve current user ID from AuthService
-    let currentUserId: number | undefined;
-    this.authService.currentUser$.subscribe(user => {
-     if (user) {
-      currentUserId = user.id;
-      // Categorize strictly based on owner_id vs current_user_id
-      this.myProjects = files.filter(f => f.owner_id === currentUserId);
-      this.sharedWithMe = files.filter(f => f.owner_id !== currentUserId);
-     }
-    });
-
+    this.categorizeFiles(files);
     this.loading = false;
    },
    error: err => {
@@ -67,22 +89,33 @@ export class HubComponent implements OnInit {
   });
  }
 
+ pollFiles() {
+  this.api.getFiles(this.selectedToolType || undefined).subscribe({
+   next: files => {
+    this.files = files;
+    this.categorizeFiles(files);
+    this.errorMsg = '';
+   },
+   error: () => {}
+  });
+ }
+
  setTab(tab: 'my-projects' | 'shared-with-me') {
   this.activeTab = tab;
  }
 
  setFilter(type: string) {
   this.selectedToolType = type;
-  this.loadFiles();
+  this.loadFiles(true);
  }
 
  createNew(toolType: string) {
   this.createError = '';
   const defaultName = `Untitled ${this.getToolName(toolType)}`;
   const projectName = window.prompt(`Enter a name for your new ${this.getToolName(toolType)}:`, defaultName);
-  
+
   if (projectName === null) {
-      return; // user cancelled
+   return;
   }
 
   const finalName = projectName.trim() || defaultName;
@@ -152,12 +185,12 @@ export class HubComponent implements OnInit {
   if (newName === null) {
    return;
   }
-  
+
   const finalName = newName.trim();
   if (!finalName || finalName === file.name) {
    return;
   }
-  
+
   this.api.updateFile(file.id, { name: finalName }).subscribe({
    next: () => {
     this.loadFiles();

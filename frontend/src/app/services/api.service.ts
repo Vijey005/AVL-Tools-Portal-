@@ -55,4 +55,33 @@ export class ApiService {
  deleteUser(id: number): Observable<any> {
   return this.http.delete<any>(`${this.apiUrl}/admin/users/${id}`);
  }
+
+ // --- Password Reset API ---
+ forgotPassword(email: string): Observable<any> {
+  return this.http.post<any>(`${this.apiUrl}/users/forgot-password`, { email });
+ }
+
+ resetPassword(token: string, new_password: string): Observable<any> {
+  return this.http.post<any>(`${this.apiUrl}/users/reset-password`, { token, new_password });
+ }
+
+ getResetRequests(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/admin/reset-requests`);
+ }
+
+ reviewResetRequest(requestId: number, action: 'approve' | 'reject'): Observable<any> {
+  return this.http.put<any>(`${this.apiUrl}/admin/reset-requests/${requestId}`, { action });
+ }
+
+ getMockEmails(email?: string): Observable<any[]> {
+  let url = `${this.apiUrl}/users/debug/emails`;
+  if (email) {
+   url += `?email=${encodeURIComponent(email)}`;
+  }
+  return this.http.get<any[]>(url);
+ }
+
+ getAnalyticsDashboard(): Observable<any> {
+  return this.http.get<any>(`${this.apiUrl}/analytics/dashboard`);
+ }
 }

@@ -15,7 +15,6 @@ export class NavbarComponent {
   isProfileOpen = false;
 
   constructor(public auth: AuthService) {
-    // Read saved theme; default to light
     const saved = localStorage.getItem('avl-theme') || 'light';
     this.isDark = saved === 'dark';
     document.documentElement.setAttribute('data-theme', saved);
@@ -33,7 +32,6 @@ export class NavbarComponent {
   }
 
   closeProfileMenuDelayed() {
-    // Small delay so click events on dropdown items can fire before closing
     setTimeout(() => { this.isProfileOpen = false; }, 200);
   }
 
